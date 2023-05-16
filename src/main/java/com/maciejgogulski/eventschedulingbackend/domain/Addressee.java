@@ -22,4 +22,7 @@ public class Addressee {
 
     @ManyToMany(mappedBy = "addressees")
     private Set<AddresseeGroup> addresseeGroups = new HashSet<>();
+
+    @ManyToMany(mappedBy = "addressees")
+    private Set<EventType> eventTypes = new HashSet<>();
 }

@@ -23,4 +23,7 @@ public class AddresseeGroup {
             inverseJoinColumns = @JoinColumn(name = "addressee_id"))
     private Set<Addressee> addressees = new HashSet<>();
 
+    @ManyToMany(mappedBy = "addresseeGroups")
+    private Set<EventType> eventTypes = new HashSet<>();
+
 }

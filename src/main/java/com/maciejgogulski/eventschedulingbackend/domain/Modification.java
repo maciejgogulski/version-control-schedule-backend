@@ -22,4 +22,7 @@ public class Modification {
 
     @ManyToOne
     private BlockParameterPivot blockParameterPivot;
+
+    @ManyToOne
+    private Event event;
 }
