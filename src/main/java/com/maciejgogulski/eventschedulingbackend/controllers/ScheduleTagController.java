@@ -35,7 +35,7 @@ public class ScheduleTagController {
     }
 
     /**
-     * Get schedule tag.
+     * Get existing schedule tag.
      * @param scheduleTagId Unique id of a schedule tag.
      * @return Schedule tag.
      */
@@ -53,5 +53,28 @@ public class ScheduleTagController {
                     }
                     """, HttpStatus.NOT_FOUND);
         }
+    }
+
+    /**
+     * Updates existing schedule tag.
+     * @param scheduleTag Updated schedule tag data.
+     * @return Updated schedule tag.
+     */
+    @PutMapping()
+    ResponseEntity<String> getScheduleTag(@RequestBody ScheduleTag scheduleTag) {
+        try {
+            ScheduleTag updatedScheduleTag = scheduleTagService.updateScheduleTag(scheduleTag);
+            String responseBody = gson.toJson(updatedScheduleTag);
+
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule tag not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        }
+
+        // TODO Handle unique name constraint violation exception.
     }
 }

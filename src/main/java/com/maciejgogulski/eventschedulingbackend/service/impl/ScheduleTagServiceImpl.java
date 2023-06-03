@@ -32,4 +32,13 @@ public class ScheduleTagServiceImpl implements ScheduleTagService {
             throw new EntityNotFoundException();
         }
     }
+
+    @Override
+    public ScheduleTag updateScheduleTag(ScheduleTag scheduleTag) throws EntityNotFoundException {
+        if (scheduleTagRepository.findById(scheduleTag.getId()).isPresent()) {
+            return scheduleTagRepository.save(scheduleTag);
+        } else {
+            throw new EntityNotFoundException();
+        }
+    }
 }

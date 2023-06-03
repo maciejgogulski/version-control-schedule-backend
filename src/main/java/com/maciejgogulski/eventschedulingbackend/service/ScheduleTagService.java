@@ -10,4 +10,6 @@ public interface ScheduleTagService {
     ScheduleTag addScheduleTag(String name);
 
     ScheduleTag getScheduleTag(Long scheduleTagId) throws EntityNotFoundException;
+
+    ScheduleTag updateScheduleTag(ScheduleTag scheduleTag) throws EntityNotFoundException;
 }
