@@ -17,5 +17,6 @@ public class SecurityConfig {
                 )
                 .httpBasic(Customizer.withDefaults())
                 .build();
+        // TODO Secure with users and roles.
     }
 }

@@ -3,6 +3,7 @@ package com.maciejgogulski.eventschedulingbackend.controllers;
 import com.google.gson.Gson;
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
+import com.maciejgogulski.eventschedulingbackend.util.GsonWrapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/schedule-tag")
 public class ScheduleTagController {
 
-    private final Gson gson = new Gson();
+    private final Gson gson = GsonWrapper.getInstance();
 
     @Autowired
     private ScheduleTagService scheduleTagService;
@@ -61,7 +62,7 @@ public class ScheduleTagController {
      * @return Updated schedule tag.
      */
     @PutMapping()
-    ResponseEntity<String> getScheduleTag(@RequestBody ScheduleTag scheduleTag) {
+    ResponseEntity<String> updateScheduleTag(@RequestBody ScheduleTag scheduleTag) {
         try {
             ScheduleTag updatedScheduleTag = scheduleTagService.updateScheduleTag(scheduleTag);
             String responseBody = gson.toJson(updatedScheduleTag);
