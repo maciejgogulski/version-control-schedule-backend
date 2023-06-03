@@ -12,4 +12,6 @@ public interface ScheduleTagService {
     ScheduleTag getScheduleTag(Long scheduleTagId) throws EntityNotFoundException;
 
     ScheduleTag updateScheduleTag(ScheduleTag scheduleTag) throws EntityNotFoundException;
+
+    void deleteScheduleTag(Long scheduleTagId) throws EntityNotFoundException;
 }

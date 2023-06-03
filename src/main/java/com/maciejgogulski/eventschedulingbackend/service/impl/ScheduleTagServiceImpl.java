@@ -41,4 +41,15 @@ public class ScheduleTagServiceImpl implements ScheduleTagService {
             throw new EntityNotFoundException();
         }
     }
+
+    @Override
+    public void deleteScheduleTag(Long scheduleTagId) throws EntityNotFoundException {
+        Optional<ScheduleTag> scheduleTag = scheduleTagRepository.findById(scheduleTagId);
+
+        if (scheduleTag.isPresent()) {
+            scheduleTagRepository.delete(scheduleTag.get());
+        } else {
+            throw new EntityNotFoundException();
+        }
+    }
 }

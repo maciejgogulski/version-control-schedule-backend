@@ -77,4 +77,28 @@ public class ScheduleTagController {
 
         // TODO Handle unique name constraint violation exception.
     }
+
+
+    /**
+     * Delete existing schedule tag.
+     * @param scheduleTagId Schedule tag id.
+     * @return Response message.
+     */
+    @DeleteMapping("/{scheduleTagId}")
+    ResponseEntity<String> deleteScheduleTag(@PathVariable Long scheduleTagId) {
+        try {
+            scheduleTagService.deleteScheduleTag(scheduleTagId);
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule tag deleted."
+                    }
+                    """, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule tag not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        }
+    }
 }
