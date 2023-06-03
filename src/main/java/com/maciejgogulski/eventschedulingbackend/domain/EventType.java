@@ -18,18 +18,18 @@ public class EventType {
 
     private String messageContent;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "event_type_addressee_group",
             joinColumns = @JoinColumn(name = "event_type_id"),
-            inverseJoinColumns = @JoinColumn(name = "addresee_group_id"))
+            inverseJoinColumns = @JoinColumn(name = "addressee_group_id"))
     private Set<AddresseeGroup> addresseeGroups = new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "event_type_addressee",
             joinColumns = @JoinColumn(name = "event_type_id"),
-            inverseJoinColumns = @JoinColumn(name = "addresee_id"))
+            inverseJoinColumns = @JoinColumn(name = "addressee_id"))
     private Set<Addressee> addressees = new HashSet<>();
 
 

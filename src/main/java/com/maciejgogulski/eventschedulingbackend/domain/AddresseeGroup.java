@@ -16,10 +16,10 @@ public class AddresseeGroup {
 
     private String name;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "group_addressee",
-            joinColumns = @JoinColumn(name = "group_id"),
+            name = "addressee_group_addressee",
+            joinColumns = @JoinColumn(name = "addressee_group_id"),
             inverseJoinColumns = @JoinColumn(name = "addressee_id"))
     private Set<Addressee> addressees = new HashSet<>();
 

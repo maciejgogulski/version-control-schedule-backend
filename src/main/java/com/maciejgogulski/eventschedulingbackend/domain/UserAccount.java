@@ -1,9 +1,6 @@
 package com.maciejgogulski.eventschedulingbackend.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -19,7 +16,7 @@ public class UserAccount extends Addressee {
 
     private String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_account_role",
             joinColumns = @JoinColumn(name = "user_account_id"),
