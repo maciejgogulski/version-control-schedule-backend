@@ -1,38 +1,77 @@
 package com.maciejgogulski.eventschedulingbackend.controllers;
 
-import com.google.gson.Gson;
-import com.maciejgogulski.eventschedulingbackend.domain.ScheduleBlock;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.maciejgogulski.eventschedulingbackend.dto.BlocksForScheduleByDayRequestDto;
+import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleBlockService;
-import com.maciejgogulski.eventschedulingbackend.util.GsonWrapper;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.text.ParseException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/schedule-block")
 public class ScheduleBlockController {
 
-    private final Gson gson = GsonWrapper.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
-    private ScheduleBlockService scheduleBlockService;
+    private final ScheduleBlockService scheduleBlockService;
 
+    public ScheduleBlockController(ScheduleBlockService scheduleBlockService) {
+        this.scheduleBlockService = scheduleBlockService;
+    }
+
+    /**
+     * Get schedule blocks of given schedule tag in provided day.
+     * @param requestDto JSON request body with tagID and provided day.
+     * @return List of schedule blocks.
+     */
+    @GetMapping("/by-day")
+    public ResponseEntity<String> getScheduleBlocksForScheduleByDay(@RequestBody BlocksForScheduleByDayRequestDto requestDto) {
+        List<ScheduleBlockDto> blockDtoList = scheduleBlockService.getScheduleBlocksForScheduleByDay(requestDto);
+        String responseBody;
+        try {
+            responseBody = objectMapper.writeValueAsString(blockDtoList);
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity<>("""
+                    {
+                        "status": "Error parsing response to JSON."
+                    }
+                    """, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     /**
      * Create a new schedule block.
-     * @param scheduleBlock Schedule block json.
+     * @param scheduleBlockDto Schedule block json.
      * @return Created schedule block.
      */
     @PostMapping
-    public ResponseEntity<String> addScheduleBlock(@RequestBody ScheduleBlock scheduleBlock) {
-        scheduleBlock = scheduleBlockService.addScheduleBlock(scheduleBlock);
-        String responseBody = gson.toJson(scheduleBlock);
+    public ResponseEntity<String> addScheduleBlock(@RequestBody ScheduleBlockDto scheduleBlockDto) {
+        try {
+            ScheduleBlockDto createdBlockDto = scheduleBlockService.addScheduleBlock(scheduleBlockDto);
+            String responseBody;
 
-        return new ResponseEntity<>(responseBody, HttpStatus.OK);
-
-        // TODO Handle wrong schedule tag id exception.
+            responseBody = objectMapper.writeValueAsString(createdBlockDto);
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JsonProcessingException | ParseException e) {
+            return new ResponseEntity<>("""
+                    {
+                        "status": "Error parsing response to JSON."
+                    }
+                    """, HttpStatus.INTERNAL_SERVER_ERROR);
+        }  catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule tag not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        }
     }
 
     /**
@@ -43,14 +82,20 @@ public class ScheduleBlockController {
     @GetMapping("/{scheduleBlockId}")
     ResponseEntity<String> getScheduleBlock(@PathVariable Long scheduleBlockId) {
         try {
-            ScheduleBlock scheduleBlock = scheduleBlockService.getScheduleBlock(scheduleBlockId);
-            String responseBody = gson.toJson(scheduleBlock);
+            ScheduleBlockDto blockDto = scheduleBlockService.getScheduleBlock(scheduleBlockId);
+            String responseBody = objectMapper.writeValueAsString(blockDto);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
-        } catch (EntityNotFoundException e) {
+        } catch (JsonProcessingException e) {
             return new ResponseEntity<>("""
                     {
-                        status: "Schedule block not found."
+                        "status": "Error parsing response to JSON."
+                    }
+                    """, HttpStatus.INTERNAL_SERVER_ERROR);
+        }  catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule tag not found."
                     }
                     """, HttpStatus.NOT_FOUND);
         }
@@ -58,14 +103,14 @@ public class ScheduleBlockController {
 
     /**
      * Updates existing schedule block.
-     * @param scheduleBlock Updated schedule block data.
+     * @param scheduleBlockDto Updated schedule block data.
      * @return Updated schedule block.
      */
     @PutMapping()
-    ResponseEntity<String> updateScheduleBlock(@RequestBody ScheduleBlock scheduleBlock) {
+    ResponseEntity<String> updateScheduleBlock(@RequestBody ScheduleBlockDto scheduleBlockDto) {
         try {
-            ScheduleBlock updatedScheduleBlock = scheduleBlockService.updateScheduleBlock(scheduleBlock);
-            String responseBody = gson.toJson(updatedScheduleBlock);
+            ScheduleBlockDto updatedScheduleBlock = scheduleBlockService.updateScheduleBlock(scheduleBlockDto);
+            String responseBody = objectMapper.writeValueAsString(updatedScheduleBlock);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
@@ -74,6 +119,12 @@ public class ScheduleBlockController {
                         status: "Schedule block not found."
                     }
                     """, HttpStatus.NOT_FOUND);
+        } catch (JsonProcessingException | ParseException e) {
+            return new ResponseEntity<>("""
+                    {
+                        "status": "Error parsing response to JSON."
+                    }
+                    """, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

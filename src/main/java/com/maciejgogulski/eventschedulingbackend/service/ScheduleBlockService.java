@@ -1,16 +1,24 @@
 package com.maciejgogulski.eventschedulingbackend.service;
 
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleBlock;
+import com.maciejgogulski.eventschedulingbackend.dto.BlocksForScheduleByDayRequestDto;
+import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
 import org.springframework.stereotype.Service;
+
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
 
 @Service
 public interface ScheduleBlockService {
 
-    ScheduleBlock addScheduleBlock(ScheduleBlock scheduleBlock);
+    ScheduleBlockDto addScheduleBlock(ScheduleBlockDto scheduleBlockDto) throws ParseException;
 
-    ScheduleBlock getScheduleBlock(Long scheduleBlockId);
+    ScheduleBlockDto getScheduleBlock(Long scheduleBlockId);
 
-    ScheduleBlock updateScheduleBlock(ScheduleBlock scheduleBlock);
+    ScheduleBlockDto updateScheduleBlock(ScheduleBlockDto scheduleBlockDto) throws ParseException;
 
     void deleteScheduleBlock(Long scheduleBlockId);
+
+    List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(BlocksForScheduleByDayRequestDto requestDto);
 }

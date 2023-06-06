@@ -1,7 +1,10 @@
 package com.maciejgogulski.eventschedulingbackend.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -13,4 +16,8 @@ public class ScheduleTag {
 
     @Column(nullable = false, unique = true)
     private String name;
+
+    @OneToMany(mappedBy = "scheduleTag", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<ScheduleBlock> scheduleBlocks;
 }
