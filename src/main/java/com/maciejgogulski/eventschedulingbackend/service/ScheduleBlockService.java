@@ -20,5 +20,5 @@ public interface ScheduleBlockService {
 
     void deleteScheduleBlock(Long scheduleBlockId);
 
-    List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(BlocksForScheduleByDayRequestDto requestDto);
+    List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, Date day);
 }

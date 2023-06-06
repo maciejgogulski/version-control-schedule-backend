@@ -18,11 +18,14 @@ import java.util.*;
 @Service
 public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
-    @Autowired
-    private ScheduleBlockRepository scheduleBlockRepository;
+    private final ScheduleBlockRepository scheduleBlockRepository;
 
-    @Autowired
-    private ScheduleTagRepository scheduleTagRepository;
+    private final ScheduleTagRepository scheduleTagRepository;
+
+    public ScheduleBlockServiceImpl(ScheduleBlockRepository scheduleBlockRepository, ScheduleTagRepository scheduleTagRepository) {
+        this.scheduleBlockRepository = scheduleBlockRepository;
+        this.scheduleTagRepository = scheduleTagRepository;
+    }
 
     @Override
     public ScheduleBlockDto addScheduleBlock(ScheduleBlockDto scheduleBlockDto) throws ParseException {
@@ -72,9 +75,9 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
     }
 
     @Override
-    public List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(BlocksForScheduleByDayRequestDto requestDto) {
+    public List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, Date day) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(requestDto.day());
+        calendar.setTime(day);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
@@ -88,7 +91,7 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         calendar.set(Calendar.MILLISECOND, 999);
         Date endOfDay = calendar.getTime();
 
-        List<ScheduleBlock> blockList = scheduleBlockRepository.findAllByScheduleTagIdAndStartDateBetween(requestDto.scheduleTagId(), startOfDay, endOfDay);
+        List<ScheduleBlock> blockList = scheduleBlockRepository.findAllByScheduleTagIdAndStartDateBetweenOrderByStartDateAsc(scheduleTagId, startOfDay, endOfDay);
         List<ScheduleBlockDto> dtoList = new ArrayList<>();
 
         for (ScheduleBlock block : blockList) {
