@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -28,11 +29,12 @@ public class ScheduleBlockController {
 
     /**
      * Get schedule blocks of given schedule tag in provided day.
-     * @param requestDto JSON request body with tagID and provided day.
+     * @param scheduleTagId ID of a schedule.
+     * @param day Provided day.
      * @return List of schedule blocks.
      */
     @GetMapping("/by-day")
-    public ResponseEntity<String> getScheduleBlocksForScheduleByDay(@RequestParam Long scheduleTagId, @RequestParam Date day) {
+    public ResponseEntity<String> getScheduleBlocksForScheduleByDay(@RequestParam Long scheduleTagId, @RequestParam String day) {
         List<ScheduleBlockDto> blockDtoList = scheduleBlockService.getScheduleBlocksForScheduleByDay(scheduleTagId, day);
         String responseBody;
         try {

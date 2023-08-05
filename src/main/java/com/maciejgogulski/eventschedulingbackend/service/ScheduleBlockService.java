@@ -1,12 +1,9 @@
 package com.maciejgogulski.eventschedulingbackend.service;
 
-import com.maciejgogulski.eventschedulingbackend.domain.ScheduleBlock;
-import com.maciejgogulski.eventschedulingbackend.dto.BlocksForScheduleByDayRequestDto;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -20,5 +17,5 @@ public interface ScheduleBlockService {
 
     void deleteScheduleBlock(Long scheduleBlockId);
 
-    List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, Date day);
+    List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, String day);
 }

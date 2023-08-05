@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -22,8 +22,8 @@ public class ScheduleBlock implements Serializable {
     private String name;
 
     @Column(nullable = false)
-    private Date startDate;
+    private LocalDateTime startDate;
 
     @Column(nullable = false)
-    private Date endDate;
+    private LocalDateTime endDate;
 }

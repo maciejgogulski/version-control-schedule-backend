@@ -9,10 +9,14 @@ import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagReposit
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleBlockService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -75,29 +79,17 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
     }
 
     @Override
-    public List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, Date day) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(day);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        Date startOfDay = calendar.getTime();
-
-        // Set the time components of the date to the end of the day
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        Date endOfDay = calendar.getTime();
+    public List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, String day) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dayAsLocalDateTime = LocalDateTime.parse(day, formatter);
+        LocalDateTime startOfDay = dayAsLocalDateTime.with(LocalTime.MIN);
+        LocalDateTime endOfDay = dayAsLocalDateTime.with(LocalTime.MAX);
 
         List<ScheduleBlock> blockList = scheduleBlockRepository.findAllByScheduleTagIdAndStartDateBetweenOrderByStartDateAsc(scheduleTagId, startOfDay, endOfDay);
         List<ScheduleBlockDto> dtoList = new ArrayList<>();
 
         for (ScheduleBlock block : blockList) {
-            dtoList.add(
-                    parseBlockToDto(block)
-            );
+            dtoList.add(parseBlockToDto(block));
         }
 
         return dtoList;
@@ -120,9 +112,9 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         block.setName(dto.name());
 
         // Parse startDate and endDate strings to java.util.Date
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date startDate = dateFormat.parse(dto.startDate());
-        Date endDate = dateFormat.parse(dto.endDate());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startDate = LocalDateTime.parse(dto.startDate(), formatter);
+        LocalDateTime endDate = LocalDateTime.parse(dto.endDate(), formatter);
 
         block.setStartDate(startDate);
         block.setEndDate(endDate);
@@ -131,9 +123,9 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
     }
 
     private ScheduleBlockDto parseBlockToDto(ScheduleBlock block) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String startDate = dateFormat.format(block.getStartDate());
-        String endDate = dateFormat.format(block.getEndDate());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String startDate = block.getStartDate().format(formatter);
+        String endDate = block.getEndDate().format(formatter);
 
         return new ScheduleBlockDto(
                 block.getId(),

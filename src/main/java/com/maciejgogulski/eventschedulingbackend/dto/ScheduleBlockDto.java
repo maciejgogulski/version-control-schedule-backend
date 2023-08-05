@@ -1,7 +1,5 @@
 package com.maciejgogulski.eventschedulingbackend.dto;
 
-import java.util.Date;
-
 public record ScheduleBlockDto(
         Long id,
         Long scheduleTagId,
