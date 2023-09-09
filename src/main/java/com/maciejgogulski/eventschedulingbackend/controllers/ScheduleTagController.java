@@ -1,9 +1,9 @@
 package com.maciejgogulski.eventschedulingbackend.controllers;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
-import com.maciejgogulski.eventschedulingbackend.util.GsonWrapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,13 +11,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/schedule-tag")
 public class ScheduleTagController {
 
     private final Logger logger = LoggerFactory.getLogger(ScheduleTagController.class);
 
-    private final Gson gson = GsonWrapper.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final ScheduleTagService scheduleTagService;
 
@@ -37,10 +39,13 @@ public class ScheduleTagController {
         ScheduleTag scheduleTag = scheduleTagService.addScheduleTag(name);
         logger.info("[addScheduleTag] Successfully created schedule tag with name: " + name);
 
-        String responseBody = gson.toJson(scheduleTag);
-
-        return new ResponseEntity<>(responseBody, HttpStatus.OK);
-
+        String responseBody = null;
+        try {
+            responseBody = objectMapper.writeValueAsString(scheduleTag);
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         // TODO Handle unique name constraint violation exception.
     }
 
@@ -55,7 +60,7 @@ public class ScheduleTagController {
             logger.info("[getScheduleTag] Getting schedule tag with id: " + scheduleTagId);
             ScheduleTag scheduleTag = scheduleTagService.getScheduleTag(scheduleTagId);
             logger.info("[getScheduleTag] Successfully fetched schedule tag with id: " + scheduleTagId);
-            String responseBody = gson.toJson(scheduleTag);
+            String responseBody = objectMapper.writeValueAsString(scheduleTag);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
@@ -65,6 +70,29 @@ public class ScheduleTagController {
                         status: "Schedule tag not found."
                     }
                     """, HttpStatus.NOT_FOUND);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping()
+    ResponseEntity<String> getScheduleTags() {
+        try {
+            logger.info("[getScheduleTags] Getting all schedule tags");
+            List<ScheduleTag> scheduleTags = scheduleTagService.getScheduleTags();
+            logger.info("[getScheduleTags] Successfully fetched " + scheduleTags.size() + " schedule tags") ;
+            String responseBody = objectMapper.writeValueAsString(scheduleTags);
+
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            logger.error("[getScheduleTag] Schedule tag not found");
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule tag not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e); // TODO: Mapping exceptions to http response codes
         }
     }
 
@@ -81,7 +109,7 @@ public class ScheduleTagController {
             ScheduleTag updatedScheduleTag = scheduleTagService.updateScheduleTag(scheduleTag);
             logger.info("[updateScheduleTag] Successfully updated schedule tag with id: " + scheduleTag.getId());
 
-            String responseBody = gson.toJson(updatedScheduleTag);
+            String responseBody = objectMapper.writeValueAsString(updatedScheduleTag);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
@@ -91,6 +119,8 @@ public class ScheduleTagController {
                         status: "Schedule tag not found."
                     }
                     """, HttpStatus.NOT_FOUND);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
 
         // TODO Handle unique name constraint violation exception.

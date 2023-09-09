@@ -1,12 +1,11 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
-import com.maciejgogulski.eventschedulingbackend.controllers.ScheduleTagController;
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleBlock;
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleBlockRepository;
-import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleBlockService;
+import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +26,11 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     private final ScheduleBlockRepository scheduleBlockRepository;
 
-    private final ScheduleTagRepository scheduleTagRepository;
+    private final ScheduleTagService scheduleTagService;
 
-    public ScheduleBlockServiceImpl(ScheduleBlockRepository scheduleBlockRepository, ScheduleTagRepository scheduleTagRepository) {
+    public ScheduleBlockServiceImpl(ScheduleBlockRepository scheduleBlockRepository, ScheduleTagService scheduleTagService) {
         this.scheduleBlockRepository = scheduleBlockRepository;
-        this.scheduleTagRepository = scheduleTagRepository;
+        this.scheduleTagService = scheduleTagService;
     }
 
     @Override
@@ -96,7 +95,7 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         LocalDateTime endOfDay = dayAsLocalDateTime.with(LocalTime.MAX);
 
         List<ScheduleBlock> blockList = scheduleBlockRepository.findAllByScheduleTagIdAndStartDateBetweenOrderByStartDateAsc(scheduleTagId, startOfDay, endOfDay);
-        logger.info("[getScheduleBlocksForScheduleByDay] Successfully fetched " + blockList.size() + " blocks");
+        logger.debug("[getScheduleBlocksForScheduleByDay] Successfully fetched " + blockList.size() + " blocks");
 
         List<ScheduleBlockDto> dtoList = new ArrayList<>();
 
@@ -107,21 +106,16 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         return dtoList;
     }
 
-    private ScheduleBlock parseDtoToBlock(ScheduleBlockDto dto) throws ParseException {
+    private ScheduleBlock parseDtoToBlock(ScheduleBlockDto dto) {
         logger.trace("[parseDtoToBlock] Parsing DTO to block");
         ScheduleBlock block = new ScheduleBlock();
         if (dto.id() != null) {
             block.setId(dto.id());
         }
 
-        Optional<ScheduleTag> scheduleTag = scheduleTagRepository.findById(dto.scheduleTagId());
+        ScheduleTag scheduleTag = scheduleTagService.getScheduleTag(dto.scheduleTagId());
 
-        if (scheduleTag.isPresent()) {
-            block.setScheduleTag(scheduleTag.get());
-        } else {
-            throw new EntityNotFoundException();
-        }
-
+        block.setScheduleTag(scheduleTag);
         block.setName(dto.name());
 
         // Parse startDate and endDate strings to java.util.Date

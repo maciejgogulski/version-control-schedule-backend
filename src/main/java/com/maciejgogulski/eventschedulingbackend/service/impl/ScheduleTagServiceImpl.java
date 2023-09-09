@@ -6,14 +6,13 @@ import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ScheduleTagServiceImpl implements ScheduleTagService {
-
 
     private final Logger logger = LoggerFactory.getLogger(ScheduleTagServiceImpl.class);
 
@@ -45,6 +44,14 @@ public class ScheduleTagServiceImpl implements ScheduleTagService {
         } else {
             throw new EntityNotFoundException();
         }
+    }
+
+    @Override
+    public List<ScheduleTag> getScheduleTags() {
+        logger.debug("[getScheduleTags] Fetching all schedule tags");
+        List<ScheduleTag> scheduleTags = scheduleTagRepository.findAll();
+        logger.debug("[getScheduleTags] Successfully fetched " + scheduleTags.size() + " schedule tags");
+        return scheduleTags;
     }
 
     @Override
