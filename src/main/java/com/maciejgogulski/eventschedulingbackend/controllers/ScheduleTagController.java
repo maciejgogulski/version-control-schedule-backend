@@ -3,6 +3,7 @@ package com.maciejgogulski.eventschedulingbackend.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
+import com.maciejgogulski.eventschedulingbackend.dto.ScheduleTagDto;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -30,14 +31,14 @@ public class ScheduleTagController {
 
     /**
      * Create a new schedule tag.
-     * @param name Schedule tag name.
+     * @param scheduleTagDto New schedule tag data.
      * @return Created schedule tag.
      */
     @PostMapping
-    public ResponseEntity<String> addScheduleTag(@RequestBody String name) {
-        logger.info("[addScheduleTag] Creating schedule tag with name: " + name);
-        ScheduleTag scheduleTag = scheduleTagService.addScheduleTag(name);
-        logger.info("[addScheduleTag] Successfully created schedule tag with name: " + name);
+    public ResponseEntity<String> addScheduleTag(@RequestBody ScheduleTagDto scheduleTagDto) {
+        logger.info("[addScheduleTag] Creating schedule tag with name: " + scheduleTagDto.name());
+        ScheduleTag scheduleTag = scheduleTagService.addScheduleTag(scheduleTagDto.name());
+        logger.info("[addScheduleTag] Successfully created schedule tag with name: " + scheduleTagDto.name());
 
         String responseBody = null;
         try {
@@ -98,16 +99,15 @@ public class ScheduleTagController {
 
     /**
      * Updates existing schedule tag.
-     * @param scheduleTag Updated schedule tag data.
+     * @param scheduleTagDto Updated schedule tag data.
      * @return Updated schedule tag.
      */
     @PutMapping()
-    ResponseEntity<String> updateScheduleTag(@RequestBody ScheduleTag scheduleTag) {
+    ResponseEntity<String> updateScheduleTag(@RequestBody ScheduleTagDto scheduleTagDto) {
         try {
-            // TODO: Change ScheduleTag to DTO
-            logger.info("[updateScheduleTag] Updating schedule tag with id: " + scheduleTag.getId());
-            ScheduleTag updatedScheduleTag = scheduleTagService.updateScheduleTag(scheduleTag);
-            logger.info("[updateScheduleTag] Successfully updated schedule tag with id: " + scheduleTag.getId());
+            logger.info("[updateScheduleTag] Updating schedule tag with id: " + scheduleTagDto.id());
+            ScheduleTagDto updatedScheduleTag = scheduleTagService.updateScheduleTag(scheduleTagDto);
+            logger.info("[updateScheduleTag] Successfully updated schedule tag with id: " + scheduleTagDto.id());
 
             String responseBody = objectMapper.writeValueAsString(updatedScheduleTag);
 

@@ -1,4 +1,4 @@
 package com.maciejgogulski.eventschedulingbackend.dto;
 
-public class ScheduleTagDto {
+public record ScheduleTagDto(Long id, String name) {
 }

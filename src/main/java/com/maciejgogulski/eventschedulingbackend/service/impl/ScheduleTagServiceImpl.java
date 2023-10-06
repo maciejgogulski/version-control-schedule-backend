@@ -1,6 +1,7 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
+import com.maciejgogulski.eventschedulingbackend.dto.ScheduleTagDto;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
 import jakarta.persistence.EntityNotFoundException;
@@ -55,12 +56,16 @@ public class ScheduleTagServiceImpl implements ScheduleTagService {
     }
 
     @Override
-    public ScheduleTag updateScheduleTag(ScheduleTag scheduleTag) throws EntityNotFoundException {
-        logger.debug("[updateScheduleTag] Updating schedule tag with id: " + scheduleTag.getId());
-        if (scheduleTagRepository.findById(scheduleTag.getId()).isPresent()) {
-            scheduleTag = scheduleTagRepository.save(scheduleTag);
-            logger.debug("[updateScheduleTag] Successfully updated schedule tag with id: " + scheduleTag.getId());
-            return scheduleTag;
+    public ScheduleTagDto updateScheduleTag(ScheduleTagDto scheduleTagDto) throws EntityNotFoundException {
+        logger.debug("[updateScheduleTag] Updating schedule tag with id: " + scheduleTagDto.id());
+        Optional<ScheduleTag> scheduleTag = scheduleTagRepository.findById(scheduleTagDto.id());
+
+        if (scheduleTag.isPresent()) {
+            ScheduleTag fetchedScheduleTag = scheduleTag.get();
+            fetchedScheduleTag.setName(scheduleTagDto.name());
+            scheduleTagRepository.save(fetchedScheduleTag);
+            logger.debug("[updateScheduleTag] Successfully updated schedule tag with id: " + scheduleTagDto.id());
+            return scheduleTagDto;
         } else {
             throw new EntityNotFoundException();
         }

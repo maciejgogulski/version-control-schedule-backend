@@ -1,6 +1,7 @@
 package com.maciejgogulski.eventschedulingbackend.service;
 
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
+import com.maciejgogulski.eventschedulingbackend.dto.ScheduleTagDto;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,7 @@ public interface ScheduleTagService {
 
     List<ScheduleTag> getScheduleTags() throws EntityNotFoundException;
 
-    ScheduleTag updateScheduleTag(ScheduleTag scheduleTag) throws EntityNotFoundException;
+    ScheduleTagDto updateScheduleTag(ScheduleTagDto scheduleTagDto) throws EntityNotFoundException;
 
     void deleteScheduleTag(Long scheduleTagId) throws EntityNotFoundException;
 }
