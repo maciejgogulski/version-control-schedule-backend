@@ -1,6 +1,7 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
 import com.maciejgogulski.eventschedulingbackend.service.CrudService;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,42 +27,45 @@ public abstract class CrudServiceImpl<T, S> implements CrudService<T, S> {
 
     @Override
     public S create(S dto) {
+        logger.debug("Creating new entity");
         T entity = convertToEntity(dto);
         return convertToDto(repository.save(entity));
     }
 
     @Override
     public S get(Long id) {
-        T entity = repository.findById(id).orElse(null);
-        if (entity != null) {
-            return convertToDto(entity);
-        }
-        return null;
+        logger.debug("Getting entity with id: " + id);
+        T entity = repository.findById(id).orElseThrow(EntityNotFoundException::new);
+        logger.debug("Successfully fetched entity with id: " + id);
+        return convertToDto(entity);
     }
 
     @Override
     public List<S> getAll() {
+        logger.debug("Getting all entities");
         List<T> entities = repository.findAll();
         List<S> dtoList = new ArrayList<>();
         for (T entity : entities) {
-           dtoList.add(convertToDto(entity));
+            dtoList.add(convertToDto(entity));
         }
+        logger.debug("Fetched " + entities.size() + " entities");
         return dtoList;
     }
 
     @Override
     public S update(Long id, S dto) {
-        T entity = repository.findById(id).orElse(null);
-        if (entity != null) {
-            entity = updateEntityFromDto(entity, dto);
-            return convertToDto(repository.save(entity));
-        }
-        return null;
+        logger.debug("Updating entity with id: " + id);
+        T entity = repository.findById(id).orElseThrow(EntityNotFoundException::new);
+        entity = updateEntityFromDto(entity, dto);
+        logger.debug("Successfully updated entity with id: " + id);
+        return convertToDto(repository.save(entity));
     }
 
     @Override
     public void delete(Long id) {
+        logger.debug("Deleting entity with id: " + id);
         repository.deleteById(id);
+        logger.debug("Successfully deleted entity with id: " + id);
     }
 
     protected abstract T convertToEntity(S dto);

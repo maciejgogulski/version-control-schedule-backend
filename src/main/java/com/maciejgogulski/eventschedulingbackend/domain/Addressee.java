@@ -25,4 +25,7 @@ public class Addressee {
 
     @ManyToMany(mappedBy = "addressees")
     private Set<EventType> eventTypes = new HashSet<>();
+
+    @ManyToMany(mappedBy = "addressees")
+    private Set<ScheduleTag> scheduleTags = new HashSet<>();
 }

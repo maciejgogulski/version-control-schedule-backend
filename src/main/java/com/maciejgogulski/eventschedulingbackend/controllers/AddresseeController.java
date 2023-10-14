@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.rmi.AlreadyBoundException;
 import java.util.List;
 
 @RestController
@@ -66,9 +67,9 @@ public class AddresseeController {
     @GetMapping()
     ResponseEntity<String> getAddressees() {
         try {
-            logger.info("[getAddressees] Getting all schedule tags");
+            logger.info("[getAddressees] Getting all addressees");
             List<AddresseeDto> addresseeDtoList = addresseeService.getAll();
-            logger.info("[getAddressees] Successfully fetched " + addresseeDtoList.size() + " addressees") ;
+            logger.info("[getAddressees] Successfully fetched " + addresseeDtoList.size() + " addressees");
             String responseBody = objectMapper.writeValueAsString(addresseeDtoList);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
@@ -127,4 +128,46 @@ public class AddresseeController {
                     """, HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/schedule-tag/{id}")
+    ResponseEntity<String> getAddresseesByScheduleTagId(@PathVariable Long id) {
+        final String METHOD_TAG = "[getAddresseeByScheduleTagId] ";
+        try {
+            logger.info(METHOD_TAG + "Getting addressees for schedule tag id: " + id);
+            List<AddresseeDto> addresseeDtoList = addresseeService.getAddressesByScheduleTagId(id);
+            logger.info(METHOD_TAG + "Successfully fetched " + addresseeDtoList.size() + " addressees");
+            String responseBody = objectMapper.writeValueAsString(addresseeDtoList);
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PutMapping("/{addresseeId}/schedule-tag/{scheduleTagId}")
+    ResponseEntity<String> assignAddresseeToScheduleTag(@PathVariable Long addresseeId, @PathVariable Long scheduleTagId) {
+        final String METHOD_TAG = "[assignAddresseeToScheduleTag] ";
+        try {
+            logger.info(METHOD_TAG + "Assigning addressee id: " + addresseeId + " to schedule tag id: " + scheduleTagId);
+            addresseeService.assignAddresseeToScheduleTagId(addresseeId, scheduleTagId);
+            logger.info(METHOD_TAG + "Successfully assigned addressee id: " + addresseeId + " to schedule tag id: " + scheduleTagId);
+            return new ResponseEntity<>("""
+                   {
+                        status: "Assigned addressee id: %s to schedule tag id: %s"
+                   }
+                    """.formatted(addresseeId, scheduleTagId), HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+           return new ResponseEntity<>("""
+                    {
+                        status: "Addressee or schedule tag not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        } catch (AlreadyBoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Addressee already assigned to schedule tag."
+                    }
+                    """, HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
 }

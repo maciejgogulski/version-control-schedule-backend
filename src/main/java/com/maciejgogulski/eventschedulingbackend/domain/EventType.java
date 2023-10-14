@@ -32,5 +32,4 @@ public class EventType {
             inverseJoinColumns = @JoinColumn(name = "addressee_id"))
     private Set<Addressee> addressees = new HashSet<>();
 
-
 }

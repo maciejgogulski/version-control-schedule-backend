@@ -1,6 +1,7 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
+import com.maciejgogulski.eventschedulingbackend.dto.AddresseeDto;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleTagDto;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
