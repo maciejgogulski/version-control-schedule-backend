@@ -22,11 +22,4 @@ public class ScheduleTag {
     @OneToMany(mappedBy = "scheduleTag", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<ScheduleBlock> scheduleBlocks;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "schedule_tag_addressee",
-            joinColumns = @JoinColumn(name = "schedule_tag_id"),
-            inverseJoinColumns = @JoinColumn(name = "addressee_id"))
-    private Set<Addressee> addressees = new HashSet<>();
 }

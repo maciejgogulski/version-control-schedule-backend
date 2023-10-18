@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.rmi.AlreadyBoundException;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;$
+import java.util.List;
 
 @Service
 public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDto> {
@@ -79,21 +79,9 @@ public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDt
     public void assignAddresseeToScheduleTagId(Long addresseeId, Long scheduleTagId) throws AlreadyBoundException {
         final String METHOD_TAG = "[assignAddresseeToScheduleTagId] ";
         logger.debug(METHOD_TAG + "Assigning addressee id: " + addresseeId + " to schedule tag id: " + scheduleTagId);
-        Addressee addressee = repository.findById(addresseeId)
-                .orElseThrow(EntityNotFoundException::new);
-        ScheduleTag scheduleTag = scheduleTagRepository.findById(scheduleTagId)
-                .orElseThrow(EntityNotFoundException::new);
 
-        List<Addressee> addressees = ((AddresseeRepository) repository).get_addressees_for_schedule_tag(scheduleTagId);
-        if (addressees.contains(addressee)) {
-            logger.error(METHOD_TAG + "Addressee id: " + addresseeId + " already assigned to schedule tag id: " + scheduleTagId);
-            throw new AlreadyBoundException(METHOD_TAG + "Addressee id: " + addresseeId + " already assigned to schedule tag id: " + scheduleTagId);
-        }
+        ((AddresseeRepository) repository).assign_addressee_to_schedule_tag(addresseeId, scheduleTagId);
 
-        addressees.add(addressee);
-        scheduleTag.setAddressees(new HashSet<>(addressees));
-
-        scheduleTagRepository.save(scheduleTag);
         logger.debug(METHOD_TAG + "Successfully assigned addressee id: " + addresseeId + " to schedule tag id: " + scheduleTagId);
     }
 }

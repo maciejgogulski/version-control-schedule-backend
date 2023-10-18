@@ -8,5 +8,7 @@ CREATE TABLE schedule_tag_addressee
             REFERENCES schedule_tag (id),
     CONSTRAINT fk_addressee_id
         FOREIGN KEY (addressee_id)
-            REFERENCES addressee (id)
+            REFERENCES addressee (id),
+    CONSTRAINT unique_schedule_tag_addressee
+        UNIQUE (schedule_tag_id, addressee_id)
 );
