@@ -3,21 +3,14 @@ package com.maciejgogulski.eventschedulingbackend.domain;
 import jakarta.persistence.*;
 import lombok.Data;
 
-@Data
 @Entity
-public class BlockParameter {
+@Data
+public class ParameterDict {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private ParameterDict parameterDict;
-
-    @ManyToOne
-    private ScheduleBlock scheduleBlock;
-
-    @Column(nullable = false)
-    private String value;
-
+    @Column(nullable = false, unique = true)
+    private String name;
 }

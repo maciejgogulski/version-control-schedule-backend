@@ -2,6 +2,7 @@ package com.maciejgogulski.eventschedulingbackend.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.maciejgogulski.eventschedulingbackend.dto.BlockParameterDto;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleBlockService;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,8 +31,9 @@ public class ScheduleBlockController {
 
     /**
      * Get schedule blocks of given schedule tag in provided day.
+     *
      * @param scheduleTagId ID of a schedule.
-     * @param day Provided day.
+     * @param day           Provided day.
      * @return List of schedule blocks.
      */
     @GetMapping("/by-day")
@@ -55,6 +57,7 @@ public class ScheduleBlockController {
 
     /**
      * Create a new schedule block.
+     *
      * @param scheduleBlockDto Schedule block json.
      * @return Created schedule block.
      */
@@ -75,7 +78,7 @@ public class ScheduleBlockController {
                         "status": "Error parsing response to JSON."
                     }
                     """, HttpStatus.INTERNAL_SERVER_ERROR);
-        }  catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             logger.error("[addScheduleBlock][ERROR] Schedule tag not found");
             return new ResponseEntity<>("""
                     {
@@ -87,6 +90,7 @@ public class ScheduleBlockController {
 
     /**
      * Get existing schedule block.
+     *
      * @param scheduleBlockId Unique id of a schedule block.
      * @return Schedule block.
      */
@@ -106,7 +110,7 @@ public class ScheduleBlockController {
                         "status": "Error parsing response to JSON."
                     }
                     """, HttpStatus.INTERNAL_SERVER_ERROR);
-        }  catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             logger.error("[getScheduleBlock][ERROR] Schedule block not found");
             return new ResponseEntity<>("""
                     {
@@ -118,6 +122,7 @@ public class ScheduleBlockController {
 
     /**
      * Updates existing schedule block.
+     *
      * @param scheduleBlockDto Updated schedule block data.
      * @return Updated schedule block.
      */
@@ -151,6 +156,7 @@ public class ScheduleBlockController {
 
     /**
      * Delete existing schedule block.
+     *
      * @param scheduleBlockId Schedule block id.
      * @return Response message.
      */
@@ -175,4 +181,36 @@ public class ScheduleBlockController {
                     """, HttpStatus.NOT_FOUND);
         }
     }
+
+    @PutMapping("/parameter")
+    ResponseEntity<String> assignParameterToScheduleBlock(@RequestBody BlockParameterDto blockParameterDto) {
+        final String METHOD_TAG = "[assignParameterToScheduleBlock] ";
+        try {
+            logger.info(METHOD_TAG + "Assigning parameter: " + blockParameterDto.parameterName()
+                    + " to schedule block id: " + blockParameterDto.scheduleBlockId());
+
+            scheduleBlockService.assignParameterToBlock(
+                    blockParameterDto.parameterName(),
+                    blockParameterDto.value(),
+                    blockParameterDto.scheduleBlockId()
+            );
+
+            logger.info(METHOD_TAG + "Successfully assigned parameter: " + blockParameterDto.parameterName()
+                    + " to schedule block id: " + blockParameterDto.scheduleBlockId());
+
+            return new ResponseEntity<>("""
+                    {
+                         status: "Assigned parameter name: %s to schedule block id: %s"
+                    }
+                     """.formatted(blockParameterDto.parameterName(), blockParameterDto.scheduleBlockId()), HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule block not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        }
+    }
 }
+
+

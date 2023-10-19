@@ -1,7 +1,6 @@
 package com.maciejgogulski.eventschedulingbackend.repositories;
 
 import com.maciejgogulski.eventschedulingbackend.domain.Addressee;
-import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.query.Procedure;
 

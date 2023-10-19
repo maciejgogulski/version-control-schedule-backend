@@ -1,8 +1,12 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
+import com.maciejgogulski.eventschedulingbackend.domain.BlockParameter;
+import com.maciejgogulski.eventschedulingbackend.domain.ParameterDict;
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleBlock;
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
+import com.maciejgogulski.eventschedulingbackend.repositories.BlockParameterRepository;
+import com.maciejgogulski.eventschedulingbackend.repositories.ParameterDictRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleBlockRepository;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleBlockService;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
@@ -28,9 +32,20 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     private final ScheduleTagService scheduleTagService;
 
-    public ScheduleBlockServiceImpl(ScheduleBlockRepository scheduleBlockRepository, ScheduleTagService scheduleTagService) {
+
+    private final ParameterDictRepository parameterDictRepository;
+
+    private final BlockParameterRepository blockParameterRepository;
+
+    public ScheduleBlockServiceImpl(
+            ScheduleBlockRepository scheduleBlockRepository,
+            ScheduleTagService scheduleTagService,
+            ParameterDictRepository parameterDictRepository, BlockParameterRepository blockParameterRepository
+    ) {
         this.scheduleBlockRepository = scheduleBlockRepository;
         this.scheduleTagService = scheduleTagService;
+        this.parameterDictRepository = parameterDictRepository;
+        this.blockParameterRepository = blockParameterRepository;
     }
 
     @Override
@@ -146,5 +161,34 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
                 startDate,
                 endDate
         );
+    }
+
+    @Override
+    public void assignParameterToBlock(String parameterName, String parameterValue, Long blockId) {
+        logger.debug("[assignParameterToBlock] Assigning parameter with name: " + parameterName
+                + " and value: " + parameterValue + " to schedule block with id: " + blockId);
+
+        Optional<ParameterDict> parameterDictOpt = parameterDictRepository.findByName(parameterName);
+        ParameterDict parameterDict;
+
+        if (parameterDictOpt.isPresent()) {
+            parameterDict = parameterDictOpt.get();
+        } else {
+            parameterDict = new ParameterDict();
+            parameterDict.setName(parameterName);
+            parameterDictRepository.save(parameterDict);
+        }
+
+        BlockParameter blockParameter = new BlockParameter();
+        blockParameter.setScheduleBlock(
+                scheduleBlockRepository.findById(blockId).orElseThrow(EntityNotFoundException::new)
+        );
+        blockParameter.setParameterDict(
+                parameterDict
+        );
+        blockParameter.setValue(parameterValue);
+        blockParameterRepository.save(blockParameter);
+
+        logger.debug("[assignParameterToBlock] Successfully assigned parameter with name: " + parameterName + " to schedule block with id: " + blockId);
     }
 }

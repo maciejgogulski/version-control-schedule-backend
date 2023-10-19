@@ -18,4 +18,6 @@ public interface ScheduleBlockService {
     void deleteScheduleBlock(Long scheduleBlockId);
 
     List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, String day);
+
+    void assignParameterToBlock(String parameterName, String parameterValue, Long blockId);
 }

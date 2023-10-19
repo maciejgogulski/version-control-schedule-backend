@@ -21,10 +21,7 @@ public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDt
 
     private final Logger logger = LoggerFactory.getLogger(AddresseeServiceImpl.class);
 
-    private final ScheduleTagRepository scheduleTagRepository;
-
-    public AddresseeServiceImpl(AddresseeRepository repository, ScheduleTagRepository scheduleTagRepository) {
-        this.scheduleTagRepository = scheduleTagRepository;
+    public AddresseeServiceImpl(AddresseeRepository repository) {
         this.repository = repository;
     }
 

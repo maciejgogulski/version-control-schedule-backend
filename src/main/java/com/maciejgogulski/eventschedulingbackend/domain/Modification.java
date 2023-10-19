@@ -21,7 +21,7 @@ public class Modification {
     private String currentValue;
 
     @ManyToOne
-    private BlockParameterPivot blockParameterPivot;
+    private BlockParameter blockParameter;
 
     @ManyToOne
     private Event event;
