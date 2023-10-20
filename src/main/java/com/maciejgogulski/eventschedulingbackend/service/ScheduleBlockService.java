@@ -1,5 +1,6 @@
 package com.maciejgogulski.eventschedulingbackend.service;
 
+import com.maciejgogulski.eventschedulingbackend.dto.ParameterDto;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
 import org.springframework.stereotype.Service;
 
@@ -20,4 +21,6 @@ public interface ScheduleBlockService {
     List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, String day);
 
     void assignParameterToBlock(String parameterName, String parameterValue, Long blockId);
+
+    List<ParameterDto> getParametersForBlock(Long scheduleBlockId);
 }

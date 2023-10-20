@@ -1,6 +1,6 @@
 package com.maciejgogulski.eventschedulingbackend.dto;
 
-public record BlockParameterDto(
+public record ParameterDto(
         Long id,
         Long scheduleBlockId,
         String parameterName,

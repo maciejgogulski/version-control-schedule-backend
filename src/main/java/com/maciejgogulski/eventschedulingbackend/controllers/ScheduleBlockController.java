@@ -2,7 +2,7 @@ package com.maciejgogulski.eventschedulingbackend.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.maciejgogulski.eventschedulingbackend.dto.BlockParameterDto;
+import com.maciejgogulski.eventschedulingbackend.dto.ParameterDto;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleBlockService;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,8 +18,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/schedule-block")
 public class ScheduleBlockController {
-
-    private final Logger logger = LoggerFactory.getLogger(ScheduleBlockController.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -38,15 +36,12 @@ public class ScheduleBlockController {
      */
     @GetMapping("/by-day")
     public ResponseEntity<String> getScheduleBlocksForScheduleByDay(@RequestParam Long scheduleTagId, @RequestParam String day) {
-        logger.info("[getScheduleBlocksForScheduleByDay] Getting schedule blocks for tag id: " + scheduleTagId + " and day: " + day);
         List<ScheduleBlockDto> blockDtoList = scheduleBlockService.getScheduleBlocksForScheduleByDay(scheduleTagId, day);
-        logger.info("[getScheduleBlocksForScheduleByDay] Successfully fetched " + blockDtoList.size() + " blocks");
         String responseBody;
         try {
             responseBody = objectMapper.writeValueAsString(blockDtoList);
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            logger.error("[getScheduleBlocksForScheduleByDay][ERROR] Error parsing response to JSON");
             return new ResponseEntity<>("""
                     {
                         "status": "Error parsing response to JSON."
@@ -64,22 +59,18 @@ public class ScheduleBlockController {
     @PostMapping
     public ResponseEntity<String> addScheduleBlock(@RequestBody ScheduleBlockDto scheduleBlockDto) {
         try {
-            logger.info("[addScheduleBlock] Adding new block: " + scheduleBlockDto.name());
             ScheduleBlockDto createdBlockDto = scheduleBlockService.addScheduleBlock(scheduleBlockDto);
-            logger.info("[addScheduleBlock] Successfully created new block with id: " + createdBlockDto.id());
             String responseBody;
 
             responseBody = objectMapper.writeValueAsString(createdBlockDto);
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (JsonProcessingException | ParseException e) {
-            logger.error("[addScheduleBlock][ERROR] Error parsing response to JSON");
             return new ResponseEntity<>("""
                     {
                         "status": "Error parsing response to JSON."
                     }
                     """, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (EntityNotFoundException e) {
-            logger.error("[addScheduleBlock][ERROR] Schedule tag not found");
             return new ResponseEntity<>("""
                     {
                         status: "Schedule tag not found."
@@ -97,21 +88,17 @@ public class ScheduleBlockController {
     @GetMapping("/{scheduleBlockId}")
     ResponseEntity<String> getScheduleBlock(@PathVariable Long scheduleBlockId) {
         try {
-            logger.info("[getScheduleBlock] Getting block with id: " + scheduleBlockId);
             ScheduleBlockDto blockDto = scheduleBlockService.getScheduleBlock(scheduleBlockId);
-            logger.info("[getScheduleBlock] Successfully fetched block with id: " + scheduleBlockId);
             String responseBody = objectMapper.writeValueAsString(blockDto);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            logger.error("[getScheduleBlock][ERROR] Error parsing response to JSON");
             return new ResponseEntity<>("""
                     {
                         "status": "Error parsing response to JSON."
                     }
                     """, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (EntityNotFoundException e) {
-            logger.error("[getScheduleBlock][ERROR] Schedule block not found");
             return new ResponseEntity<>("""
                     {
                         status: "Schedule block not found."
@@ -129,22 +116,17 @@ public class ScheduleBlockController {
     @PutMapping()
     ResponseEntity<String> updateScheduleBlock(@RequestBody ScheduleBlockDto scheduleBlockDto) {
         try {
-            logger.info("[updateScheduleBlock] Updating block with id: " + scheduleBlockDto.id());
             ScheduleBlockDto updatedScheduleBlock = scheduleBlockService.updateScheduleBlock(scheduleBlockDto);
-            logger.info("[updateScheduleBlock] Successfully updated block with id: " + scheduleBlockDto.id());
-
             String responseBody = objectMapper.writeValueAsString(updatedScheduleBlock);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
-            logger.error("[updateScheduleBlock][ERROR] Schedule block not found");
             return new ResponseEntity<>("""
                     {
                         status: "Schedule block not found."
                     }
                     """, HttpStatus.NOT_FOUND);
         } catch (JsonProcessingException | ParseException e) {
-            logger.error("[updateScheduleBlock][ERROR] Error parsing response to JSON");
             return new ResponseEntity<>("""
                     {
                         "status": "Error parsing response to JSON."
@@ -163,17 +145,13 @@ public class ScheduleBlockController {
     @DeleteMapping("/{scheduleBlockId}")
     ResponseEntity<String> deleteScheduleBlock(@PathVariable Long scheduleBlockId) {
         try {
-            logger.info("[deleteScheduleBlock] Deleting block with id: " + scheduleBlockId);
             scheduleBlockService.deleteScheduleBlock(scheduleBlockId);
-            logger.info("[deleteScheduleBlock] Successfully deleted block with id: " + scheduleBlockId);
-
             return new ResponseEntity<>("""
                     {
                         status: "Schedule block deleted."
                     }
                     """, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
-            logger.error("[deleteScheduleBlock][ERROR] Schedule block not found");
             return new ResponseEntity<>("""
                     {
                         status: "Schedule block not found."
@@ -183,26 +161,32 @@ public class ScheduleBlockController {
     }
 
     @PutMapping("/parameter")
-    ResponseEntity<String> assignParameterToScheduleBlock(@RequestBody BlockParameterDto blockParameterDto) {
-        final String METHOD_TAG = "[assignParameterToScheduleBlock] ";
+    ResponseEntity<String> assignParameterToScheduleBlock(@RequestBody ParameterDto parameterDto) {
         try {
-            logger.info(METHOD_TAG + "Assigning parameter: " + blockParameterDto.parameterName()
-                    + " to schedule block id: " + blockParameterDto.scheduleBlockId());
-
             scheduleBlockService.assignParameterToBlock(
-                    blockParameterDto.parameterName(),
-                    blockParameterDto.value(),
-                    blockParameterDto.scheduleBlockId()
+                    parameterDto.parameterName(),
+                    parameterDto.value(),
+                    parameterDto.scheduleBlockId()
             );
-
-            logger.info(METHOD_TAG + "Successfully assigned parameter: " + blockParameterDto.parameterName()
-                    + " to schedule block id: " + blockParameterDto.scheduleBlockId());
-
             return new ResponseEntity<>("""
                     {
                          status: "Assigned parameter name: %s to schedule block id: %s"
                     }
-                     """.formatted(blockParameterDto.parameterName(), blockParameterDto.scheduleBlockId()), HttpStatus.OK);
+                     """.formatted(parameterDto.parameterName(), parameterDto.scheduleBlockId()), HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule block not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/{scheduleBlockId}/parameter")
+    ResponseEntity<?> getParametersForScheduleBlock(@PathVariable Long scheduleBlockId) {
+        try {
+            List<ParameterDto> parameterDtoList = scheduleBlockService.getParametersForBlock(scheduleBlockId);
+            return new ResponseEntity<>(parameterDtoList, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("""
                     {
