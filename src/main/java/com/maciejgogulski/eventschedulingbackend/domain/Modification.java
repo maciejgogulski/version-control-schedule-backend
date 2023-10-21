@@ -19,7 +19,7 @@ public class Modification {
     @ManyToOne
     private BlockParameter blockParameter;
 
-    private ModificationType type;
+    private String type;
 
     private String oldValue;
 

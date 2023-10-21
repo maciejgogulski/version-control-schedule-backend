@@ -1,22 +1,23 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
+import com.maciejgogulski.eventschedulingbackend.dao.ModificationDao;
 import com.maciejgogulski.eventschedulingbackend.domain.BlockParameter;
 import com.maciejgogulski.eventschedulingbackend.domain.Modification;
 import com.maciejgogulski.eventschedulingbackend.domain.StagedEvent;
 import com.maciejgogulski.eventschedulingbackend.dto.ModificationDto;
 import com.maciejgogulski.eventschedulingbackend.dto.StagedEventDto;
-import com.maciejgogulski.eventschedulingbackend.enums.ModificationType;
 import com.maciejgogulski.eventschedulingbackend.repositories.BlockParameterRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.ModificationRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.StagedEventRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedEventDto> {
@@ -29,13 +30,16 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
 
     private final BlockParameterRepository blockParameterRepository;
 
+    private final ModificationDao modificationDao;
+
     public StagedEventServiceImpl(StagedEventRepository stagedEventRepository,
                                   ScheduleTagRepository scheduleTagRepository,
                                   ModificationRepository modificationRepository,
-                                  BlockParameterRepository blockParameterRepository) {
+                                  BlockParameterRepository blockParameterRepository, ModificationDao modificationDao) {
         this.scheduleTagRepository = scheduleTagRepository;
         this.modificationRepository = modificationRepository;
         this.blockParameterRepository = blockParameterRepository;
+        this.modificationDao = modificationDao;
         this.repository = stagedEventRepository;
     }
 
@@ -97,12 +101,19 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
                 blockParameter
         );
 
-        modification.setType(modificationDto.type());
+        modification.setType(modificationDto.type().name());
         modification.setOldValue(modificationDto.oldValue());
         modification.setNewValue(modificationDto.newValue());
         modification.setTimestamp(LocalDateTime.now());
 
         modificationRepository.save(modification);
         logger.debug("[addModification] Successfully added new modification referring to block parameter pivot id: " + modificationDto.blockParameterId());
+    }
+
+    public List<ModificationDto> getModificationsForStagedEvent(Long stagedEventId) {
+        logger.debug("[getModificationsForStagedEvent] Getting modifications for staged event id: " + stagedEventId);
+        List<ModificationDto> modificationDtoList = modificationDao.get_modifications_for_staged_event(stagedEventId);
+        logger.debug("[getModificationsForStagedEvent] Successfully fetched " + modificationDtoList.size() + " modifications for staged event id: " + stagedEventId);
+        return modificationDtoList;
     }
 }
