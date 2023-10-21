@@ -1,28 +1,29 @@
 package com.maciejgogulski.eventschedulingbackend.domain;
 
-
+import com.maciejgogulski.eventschedulingbackend.enums.ModificationType;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
 public class Modification {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Date timestamp;
-
-    private String previousValue;
-
-    private String currentValue;
+    @ManyToOne
+    private StagedEvent stagedEvent;
 
     @ManyToOne
     private BlockParameter blockParameter;
 
-    @ManyToOne
-    private Event event;
+    private ModificationType type;
+
+    private String oldValue;
+
+    private String newValue;
+
+    private LocalDateTime timestamp;
 }

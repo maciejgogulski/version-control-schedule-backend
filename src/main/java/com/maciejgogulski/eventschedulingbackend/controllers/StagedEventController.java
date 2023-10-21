@@ -2,6 +2,7 @@ package com.maciejgogulski.eventschedulingbackend.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.maciejgogulski.eventschedulingbackend.dto.ModificationDto;
 import com.maciejgogulski.eventschedulingbackend.dto.StagedEventDto;
 import com.maciejgogulski.eventschedulingbackend.service.impl.StagedEventServiceImpl;
 import org.slf4j.Logger;
@@ -40,5 +41,15 @@ public class StagedEventController {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @PostMapping("/modification")
+    public ResponseEntity<String> addModification(@RequestBody ModificationDto modificationDto) {
+        stagedEventService.addModification(modificationDto);
+        return new ResponseEntity<>("""
+                {
+                    "status": "Successfully added modification referring to block parameter pivot id: %s"
+                }
+                """.formatted(modificationDto.blockParameterId()), HttpStatus.OK);
     }
 }

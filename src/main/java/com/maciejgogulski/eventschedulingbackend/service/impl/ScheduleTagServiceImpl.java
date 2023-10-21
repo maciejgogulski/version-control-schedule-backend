@@ -1,8 +1,8 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
 import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
-import com.maciejgogulski.eventschedulingbackend.dto.AddresseeDto;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleTagDto;
+import com.maciejgogulski.eventschedulingbackend.dto.StagedEventDto;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
 import jakarta.persistence.EntityNotFoundException;
@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,8 +22,11 @@ public class ScheduleTagServiceImpl implements ScheduleTagService {
 
     private final ScheduleTagRepository scheduleTagRepository;
 
-    public ScheduleTagServiceImpl(ScheduleTagRepository scheduleTagRepository) {
+    private final StagedEventServiceImpl stagedEventService;
+
+    public ScheduleTagServiceImpl(ScheduleTagRepository scheduleTagRepository, StagedEventServiceImpl stagedEventService) {
         this.scheduleTagRepository = scheduleTagRepository;
+        this.stagedEventService = stagedEventService;
     }
 
     @Override
@@ -31,6 +36,14 @@ public class ScheduleTagServiceImpl implements ScheduleTagService {
         scheduleTag.setName(name);
         scheduleTag = scheduleTagRepository.save(scheduleTag);
         logger.debug("[addScheduleTag] Successfully created schedule tag with name: " + name);
+
+        stagedEventService.create(new StagedEventDto(
+                null,
+                scheduleTag.getId(),
+                false,
+                LocalDateTime.now()
+        ));
+
         return scheduleTag;
     }
 
