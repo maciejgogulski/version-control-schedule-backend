@@ -13,7 +13,8 @@ BEGIN
                  FROM block_parameter
                           INNER JOIN schedule_block on block_parameter.schedule_block_id = schedule_block.id
                           INNER JOIN parameter_dict on block_parameter.parameter_dict_id = parameter_dict.id
-                 WHERE schedule_block.id = p_schedule_block_id;
+                 WHERE schedule_block.id = p_schedule_block_id
+                   AND block_parameter.deleted = false;
 END;
 $$
     LANGUAGE plpgsql;

@@ -6,6 +6,7 @@ public record ModificationDto(
         Long id,
         Long stagedEventId,
         Long blockParameterId,
+        String blockName,
         String parameterName,
         ModificationType type,
         String oldValue,

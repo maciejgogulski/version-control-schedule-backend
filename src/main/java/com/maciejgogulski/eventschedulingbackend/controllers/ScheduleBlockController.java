@@ -196,6 +196,24 @@ public class ScheduleBlockController {
                     """, HttpStatus.NOT_FOUND);
         }
     }
+
+    @DeleteMapping("/parameter/{blockParameterId}")
+    ResponseEntity<?> deleteParameterFromScheduleBlock(@PathVariable Long blockParameterId) {
+        try {
+            scheduleBlockService.deleteParameterFormScheduleBlock(blockParameterId);
+            return new ResponseEntity<>("""
+                    {
+                        status: "Successfully deleted block parameter with id: %s"
+                    }
+                    """.formatted(blockParameterId), HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Block parameter not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        }
+    }
 }
 
 

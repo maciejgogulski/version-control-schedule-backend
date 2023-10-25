@@ -8,4 +8,6 @@ public interface ModificationService {
     void assignParameterToScheduleBlockModification(BlockParameter blockParameter);
 
     void updateParameterWithinBlockModification(BlockParameter blockParameter);
+
+    void deleteParameterFromScheduleBlockModification(BlockParameter blockParameter);
 }

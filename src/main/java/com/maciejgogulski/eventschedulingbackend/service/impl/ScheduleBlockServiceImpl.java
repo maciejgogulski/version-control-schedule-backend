@@ -58,20 +58,20 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     @Override
     public ScheduleBlockDto addScheduleBlock(ScheduleBlockDto scheduleBlockDto) {
-        logger.debug("[addScheduleBlock] Creating schedule block with name: " + scheduleBlockDto.name());
+        logger.info("[addScheduleBlock] Creating schedule block with name: " + scheduleBlockDto.name());
         ScheduleBlock scheduleBlock = parseDtoToBlock(scheduleBlockDto);
         scheduleBlock = scheduleBlockRepository.save(scheduleBlock);
-        logger.debug("[addScheduleBlock] Successfully created schedule block with name: " + scheduleBlockDto.name());
+        logger.info("[addScheduleBlock] Successfully created schedule block with name: " + scheduleBlockDto.name());
         return parseBlockToDto(scheduleBlock);
     }
 
     @Override
     public ScheduleBlockDto getScheduleBlock(Long scheduleBlockId) {
-        logger.debug("[getScheduleBlock] Getting schedule block with id: " + scheduleBlockId);
+        logger.info("[getScheduleBlock] Getting schedule block with id: " + scheduleBlockId);
         Optional<ScheduleBlock> scheduleBlock = scheduleBlockRepository.findById(scheduleBlockId);
 
         if (scheduleBlock.isPresent()) {
-            logger.debug("[getScheduleBlock] Successfully fetched schedule block with id: " + scheduleBlockId);
+            logger.info("[getScheduleBlock] Successfully fetched schedule block with id: " + scheduleBlockId);
             return parseBlockToDto(
                     scheduleBlock.get()
             );
@@ -82,10 +82,10 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     @Override
     public ScheduleBlockDto updateScheduleBlock(ScheduleBlockDto scheduleBlockDto) {
-        logger.debug("[updateScheduleBlock] Updating schedule block with id: " + scheduleBlockDto.id());
+        logger.info("[updateScheduleBlock] Updating schedule block with id: " + scheduleBlockDto.id());
         Optional<ScheduleBlock> scheduleBlock = scheduleBlockRepository.findById(scheduleBlockDto.id());
         if (scheduleBlock.isPresent()) {
-            logger.debug("[updateScheduleBlock] Successfully updated schedule block with id: " + scheduleBlockDto.id());
+            logger.info("[updateScheduleBlock] Successfully updated schedule block with id: " + scheduleBlockDto.id());
             return parseBlockToDto(
                     scheduleBlockRepository.save(
                             parseDtoToBlock(scheduleBlockDto)
@@ -98,11 +98,11 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     @Override
     public void deleteScheduleBlock(Long scheduleBlockId) {
-        logger.debug("[deleteScheduleBlock] Deleting schedule block with id: " + scheduleBlockId);
+        logger.info("[deleteScheduleBlock] Deleting schedule block with id: " + scheduleBlockId);
         Optional<ScheduleBlock> scheduleBlock = scheduleBlockRepository.findById(scheduleBlockId);
 
         if (scheduleBlock.isPresent()) {
-            logger.debug("[deleteScheduleBlock] Successfully deleted schedule block with id: " + scheduleBlockId);
+            logger.info("[deleteScheduleBlock] Successfully deleted schedule block with id: " + scheduleBlockId);
             scheduleBlockRepository.delete(scheduleBlock.get());
         } else {
             throw new EntityNotFoundException();
@@ -111,14 +111,14 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     @Override
     public List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, String day) {
-        logger.debug("[getScheduleBlocksForScheduleByDay] Getting schedule blocks for tag id: " + scheduleTagId + " and day: " + day);
+        logger.info("[getScheduleBlocksForScheduleByDay] Getting schedule blocks for tag id: " + scheduleTagId + " and day: " + day);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dayAsLocalDateTime = LocalDateTime.parse(day, formatter);
         LocalDateTime startOfDay = dayAsLocalDateTime.with(LocalTime.MIN);
         LocalDateTime endOfDay = dayAsLocalDateTime.with(LocalTime.MAX);
 
         List<ScheduleBlock> blockList = scheduleBlockRepository.findAllByScheduleTagIdAndStartDateBetweenOrderByStartDateAsc(scheduleTagId, startOfDay, endOfDay);
-        logger.debug("[getScheduleBlocksForScheduleByDay] Successfully fetched " + blockList.size() + " blocks");
+        logger.info("[getScheduleBlocksForScheduleByDay] Successfully fetched " + blockList.size() + " blocks");
 
         List<ScheduleBlockDto> dtoList = new ArrayList<>();
 
@@ -176,7 +176,7 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         String parameterValue = parameterDto.value();
         Long blockId = parameterDto.scheduleBlockId();
 
-        logger.debug("[assignParameterToBlock] Assigning parameter with name: " + parameterName
+        logger.info("[assignParameterToBlock] Assigning parameter with name: " + parameterName
                 + " and value: " + parameterValue + " to schedule block with id: " + blockId);
 
         Optional<ParameterDict> parameterDictOpt = parameterDictRepository.findByName(parameterName);
@@ -202,13 +202,13 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
         modificationService.assignParameterToScheduleBlockModification(blockParameter);
 
-        logger.debug("[assignParameterToBlock] Successfully assigned parameter with name: " + parameterName + " to schedule block with id: " + blockId);
+        logger.info("[assignParameterToBlock] Successfully assigned parameter with name: " + parameterName + " to schedule block with id: " + blockId);
     }
 
     @Override
     @Transactional
     public void updateParameterWithinBlock(ParameterDto parameterDto) {
-        logger.debug("[updateParameterWithinBlock] Updating parameter with name: " + parameterDto.parameterName()
+        logger.info("[updateParameterWithinBlock] Updating parameter with name: " + parameterDto.parameterName()
                 + " and value: " + parameterDto.value() + " within schedule block with id: " + parameterDto.scheduleBlockId());
 
         BlockParameter blockParameter = blockParameterRepository.findById(parameterDto.id())
@@ -227,7 +227,18 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
         modificationService.updateParameterWithinBlockModification(blockParameter);
 
-        logger.debug("[updateParameterWithinBlock] Successfully updated parameter with name: " + parameterDto.parameterName() + " within schedule block with id: " + parameterDto.scheduleBlockId());
+        logger.info("[updateParameterWithinBlock] Successfully updated parameter with name: " + parameterDto.parameterName() + " within schedule block with id: " + parameterDto.scheduleBlockId());
+    }
+
+    @Override
+    @Transactional
+    public void deleteParameterFormScheduleBlock(Long blockParameterId) {
+        logger.info("[deleteParameterFormScheduleBlock] Deleting parameter id: " + blockParameterId);
+        BlockParameter blockParameter = blockParameterRepository.findById(blockParameterId)
+                .orElseThrow(EntityNotFoundException::new);
+        modificationService.deleteParameterFromScheduleBlockModification(blockParameter);
+        blockParameterRepository.deleteById(blockParameterId);
+        logger.info("[deleteParameterFormScheduleBlock] Successfully deleted parameter id: " + blockParameterId);
     }
 
     @Override

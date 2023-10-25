@@ -12,6 +12,7 @@ public class ModificationMapper {
                 rowSet.getLong("id"),
                 rowSet.getLong("staged_event_id"),
                 rowSet.getLong("block_parameter_id"),
+                rowSet.getString("block_name"),
                 rowSet.getString("parameter_name"),
                 ModificationType.valueOf(rowSet.getString("type")),
                 rowSet.getString("old_value"),

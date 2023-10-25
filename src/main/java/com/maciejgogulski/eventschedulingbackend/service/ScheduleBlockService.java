@@ -25,4 +25,6 @@ public interface ScheduleBlockService {
     List<ParameterDto> getParametersForBlock(Long scheduleBlockId);
 
     void updateParameterWithinBlock(ParameterDto parameterDto);
+
+    void deleteParameterFormScheduleBlock(Long blockParameterId);
 }
