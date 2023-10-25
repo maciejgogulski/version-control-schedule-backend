@@ -9,6 +9,7 @@ BEGIN
                  WHERE staged_event_id = p_staged_event_id
                  AND parameter_dict_id = p_parameter_dict_id
                  AND block_parameter.schedule_block_id = p_schedule_block_id
+                 AND block_parameter.deleted = false
                  LIMIT 1;
 END;
 $$

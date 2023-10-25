@@ -236,8 +236,8 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         logger.info("[deleteParameterFormScheduleBlock] Deleting parameter id: " + blockParameterId);
         BlockParameter blockParameter = blockParameterRepository.findById(blockParameterId)
                 .orElseThrow(EntityNotFoundException::new);
-        modificationService.deleteParameterFromScheduleBlockModification(blockParameter);
         blockParameterRepository.deleteById(blockParameterId);
+        modificationService.deleteParameterFromScheduleBlockModification(blockParameter);
         logger.info("[deleteParameterFormScheduleBlock] Successfully deleted parameter id: " + blockParameterId);
     }
 
