@@ -1,15 +1,13 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
 import com.maciejgogulski.eventschedulingbackend.dao.BlockParameterDao;
-import com.maciejgogulski.eventschedulingbackend.domain.BlockParameter;
-import com.maciejgogulski.eventschedulingbackend.domain.ParameterDict;
-import com.maciejgogulski.eventschedulingbackend.domain.ScheduleBlock;
-import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
+import com.maciejgogulski.eventschedulingbackend.domain.*;
 import com.maciejgogulski.eventschedulingbackend.dto.ParameterDto;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
 import com.maciejgogulski.eventschedulingbackend.repositories.BlockParameterRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.ParameterDictRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleBlockRepository;
+import com.maciejgogulski.eventschedulingbackend.service.ModificationService;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleBlockService;
 import com.maciejgogulski.eventschedulingbackend.service.ScheduleTagService;
 import jakarta.persistence.EntityNotFoundException;
@@ -35,28 +33,31 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     private final ScheduleTagService scheduleTagService;
 
-
     private final ParameterDictRepository parameterDictRepository;
 
     private final BlockParameterRepository blockParameterRepository;
 
     private final BlockParameterDao blockParameterDao;
 
+    private final ModificationService modificationService;
 
     public ScheduleBlockServiceImpl(
             ScheduleBlockRepository scheduleBlockRepository,
             ScheduleTagService scheduleTagService,
-            ParameterDictRepository parameterDictRepository, BlockParameterRepository blockParameterRepository,
-            BlockParameterDao blockParameterDao) {
+            ParameterDictRepository parameterDictRepository,
+            BlockParameterRepository blockParameterRepository,
+            BlockParameterDao blockParameterDao,
+            ModificationService modificationService) {
         this.scheduleBlockRepository = scheduleBlockRepository;
         this.scheduleTagService = scheduleTagService;
         this.parameterDictRepository = parameterDictRepository;
         this.blockParameterRepository = blockParameterRepository;
         this.blockParameterDao = blockParameterDao;
+        this.modificationService = modificationService;
     }
 
     @Override
-    public ScheduleBlockDto addScheduleBlock(ScheduleBlockDto scheduleBlockDto) throws ParseException {
+    public ScheduleBlockDto addScheduleBlock(ScheduleBlockDto scheduleBlockDto) {
         logger.debug("[addScheduleBlock] Creating schedule block with name: " + scheduleBlockDto.name());
         ScheduleBlock scheduleBlock = parseDtoToBlock(scheduleBlockDto);
         scheduleBlock = scheduleBlockRepository.save(scheduleBlock);
@@ -80,7 +81,7 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
     }
 
     @Override
-    public ScheduleBlockDto updateScheduleBlock(ScheduleBlockDto scheduleBlockDto) throws ParseException {
+    public ScheduleBlockDto updateScheduleBlock(ScheduleBlockDto scheduleBlockDto) {
         logger.debug("[updateScheduleBlock] Updating schedule block with id: " + scheduleBlockDto.id());
         Optional<ScheduleBlock> scheduleBlock = scheduleBlockRepository.findById(scheduleBlockDto.id());
         if (scheduleBlock.isPresent()) {
@@ -194,6 +195,8 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         );
         blockParameter.setValue(parameterValue);
         blockParameterRepository.save(blockParameter);
+
+        modificationService.assignParameterToScheduleBlockModification(blockParameter);
 
         logger.debug("[assignParameterToBlock] Successfully assigned parameter with name: " + parameterName + " to schedule block with id: " + blockId);
     }

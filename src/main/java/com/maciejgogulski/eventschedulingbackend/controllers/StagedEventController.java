@@ -42,16 +42,6 @@ public class StagedEventController {
         }
     }
 
-    @PostMapping("/modification")
-    public ResponseEntity<String> addModification(@RequestBody ModificationDto modificationDto) {
-        stagedEventService.addModification(modificationDto);
-        return new ResponseEntity<>("""
-                {
-                    "status": "Successfully added modification referring to block parameter pivot id: %s"
-                }
-                """.formatted(modificationDto.blockParameterId()), HttpStatus.OK);
-    }
-
     @GetMapping("{stagedEventId}/modification")
     public ResponseEntity<String> getModificationsForStagedEvent(@PathVariable Long stagedEventId) throws JsonProcessingException {
         List<ModificationDto> modificationDtoList = stagedEventService.getModificationsForStagedEvent(stagedEventId);

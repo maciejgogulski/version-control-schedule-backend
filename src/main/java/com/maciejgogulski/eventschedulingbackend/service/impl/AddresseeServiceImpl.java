@@ -1,18 +1,14 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
 import com.maciejgogulski.eventschedulingbackend.domain.Addressee;
-import com.maciejgogulski.eventschedulingbackend.domain.ScheduleTag;
 import com.maciejgogulski.eventschedulingbackend.dto.AddresseeDto;
 import com.maciejgogulski.eventschedulingbackend.repositories.AddresseeRepository;
-import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.rmi.AlreadyBoundException;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 

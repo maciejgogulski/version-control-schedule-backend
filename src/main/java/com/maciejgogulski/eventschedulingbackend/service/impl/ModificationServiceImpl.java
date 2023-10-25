@@ -1,0 +1,78 @@
+package com.maciejgogulski.eventschedulingbackend.service.impl;
+
+import com.maciejgogulski.eventschedulingbackend.domain.BlockParameter;
+import com.maciejgogulski.eventschedulingbackend.domain.Modification;
+import com.maciejgogulski.eventschedulingbackend.domain.StagedEvent;
+import com.maciejgogulski.eventschedulingbackend.enums.ModificationType;
+import com.maciejgogulski.eventschedulingbackend.repositories.ModificationRepository;
+import com.maciejgogulski.eventschedulingbackend.repositories.StagedEventRepository;
+import com.maciejgogulski.eventschedulingbackend.service.ModificationService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Service
+public class ModificationServiceImpl implements ModificationService {
+
+    private final Logger logger = LoggerFactory.getLogger(ModificationServiceImpl.class);
+
+    private final ModificationRepository modificationRepository;
+
+    private final StagedEventRepository stagedEventRepository;
+
+    public ModificationServiceImpl(ModificationRepository modificationRepository, StagedEventRepository stagedEventRepository) {
+        this.modificationRepository = modificationRepository;
+        this.stagedEventRepository = stagedEventRepository;
+    }
+
+    @Override
+    @Transactional
+    public void assignParameterToScheduleBlockModification(BlockParameter blockParameter) {
+        final String METHOD_NAME = "[assignParameterToScheduleBlockModification]";
+        logger.info(METHOD_NAME + " Creating proper modification for block parameter id: " + blockParameter.getId());
+
+        Modification modification = new Modification();
+        modification.setType(String.valueOf(ModificationType.CREATE_PARAMETER));
+
+
+        logger.debug(METHOD_NAME + " Searching for staged event");
+        StagedEvent stagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId())
+                .orElseThrow(EntityNotFoundException::new);
+
+        logger.debug(METHOD_NAME + " Searching for parameter modification for staged event");
+        Optional<Modification> modificationOptional =
+                modificationRepository.find_modification_for_staged_event_and_parameter_dict(stagedEvent.getId(), blockParameter.getParameterDict().getId());
+
+        if (modificationOptional.isPresent()) {
+            modification = modificationOptional.get();
+            ModificationType modificationType = ModificationType.valueOf(modification.getType());
+            logger.debug(METHOD_NAME + " Found modification with type " + modificationType);
+
+            if (modificationType.equals(ModificationType.DELETE_PARAMETER)) {
+
+               if (blockParameter.getValue().equals(modification.getOldValue())) {
+                   logger.debug(METHOD_NAME + " Old value of modification is the same as newly assigned parameter value - deleting modification");
+                   modificationRepository.deleteById(modification.getId());
+                   return;
+               } else {
+                   logger.debug(METHOD_NAME + " Old value of modification is different from assigned parameter value - setting modification type to UPDATE_PARAMETER");
+                   modification.setType(ModificationType.UPDATE_PARAMETER.name());
+               }
+            }
+        }
+
+        modification.setStagedEvent(stagedEvent);
+        modification.setBlockParameter(blockParameter);
+        modification.setNewValue(blockParameter.getValue());
+        modification.setTimestamp(LocalDateTime.now());
+
+        modificationRepository.save(modification);
+
+        logger.info(METHOD_NAME + " Successfully created proper modification for block parameter id: " + blockParameter.getId());
+    }
+}
