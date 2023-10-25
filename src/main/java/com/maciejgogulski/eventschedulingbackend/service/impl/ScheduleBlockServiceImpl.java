@@ -171,7 +171,11 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
     }
 
     @Override
-    public void assignParameterToBlock(String parameterName, String parameterValue, Long blockId) {
+    public void assignParameterToBlock(ParameterDto parameterDto) {
+        String parameterName = parameterDto.parameterName();
+        String parameterValue = parameterDto.value();
+        Long blockId = parameterDto.scheduleBlockId();
+
         logger.debug("[assignParameterToBlock] Assigning parameter with name: " + parameterName
                 + " and value: " + parameterValue + " to schedule block with id: " + blockId);
 
@@ -203,6 +207,31 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     @Override
     @Transactional
+    public void updateParameterWithinBlock(ParameterDto parameterDto) {
+        logger.debug("[updateParameterWithinBlock] Updating parameter with name: " + parameterDto.parameterName()
+                + " and value: " + parameterDto.value() + " within schedule block with id: " + parameterDto.scheduleBlockId());
+
+        BlockParameter blockParameter = blockParameterRepository.findById(parameterDto.id())
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue(parameterDto.value());
+        blockParameter.setScheduleBlock(
+                scheduleBlockRepository.findById(parameterDto.scheduleBlockId()).orElseThrow(EntityNotFoundException::new)
+        );
+        blockParameter.setParameterDict(
+               parameterDictRepository.findByName(parameterDto.parameterName())
+                       .orElseThrow(EntityNotFoundException::new)
+        );
+
+        blockParameterRepository.save(blockParameter);
+
+        modificationService.updateParameterWithinBlockModification(blockParameter);
+
+        logger.debug("[updateParameterWithinBlock] Successfully updated parameter with name: " + parameterDto.parameterName() + " within schedule block with id: " + parameterDto.scheduleBlockId());
+    }
+
+    @Override
+    @Transactional
     public List<ParameterDto> getParametersForBlock(Long scheduleBlockId) {
         final String METHOD_TAG = "[getParametersForBlock]";
         logger.debug(METHOD_TAG + " Getting parameters for block with id: " + scheduleBlockId);
@@ -212,4 +241,5 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         logger.debug(METHOD_TAG + " Successfully fetched: " + parameterDtoList.size() + " parameters");
         return parameterDtoList;
     }
+
 }

@@ -20,7 +20,9 @@ public interface ScheduleBlockService {
 
     List<ScheduleBlockDto> getScheduleBlocksForScheduleByDay(Long scheduleTagId, String day);
 
-    void assignParameterToBlock(String parameterName, String parameterValue, Long blockId);
+    void assignParameterToBlock(ParameterDto parameterDto);
 
     List<ParameterDto> getParametersForBlock(Long scheduleBlockId);
+
+    void updateParameterWithinBlock(ParameterDto parameterDto);
 }

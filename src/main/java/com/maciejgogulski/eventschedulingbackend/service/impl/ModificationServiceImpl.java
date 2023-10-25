@@ -34,7 +34,7 @@ public class ModificationServiceImpl implements ModificationService {
     @Transactional
     public void assignParameterToScheduleBlockModification(BlockParameter blockParameter) {
         final String METHOD_NAME = "[assignParameterToScheduleBlockModification]";
-        logger.info(METHOD_NAME + " Creating proper modification for block parameter id: " + blockParameter.getId());
+        logger.info(METHOD_NAME + " Creating proper modification for creating block parameter id: " + blockParameter.getId());
 
         Modification modification = new Modification();
         modification.setType(String.valueOf(ModificationType.CREATE_PARAMETER));
@@ -46,7 +46,11 @@ public class ModificationServiceImpl implements ModificationService {
 
         logger.debug(METHOD_NAME + " Searching for parameter modification for staged event");
         Optional<Modification> modificationOptional =
-                modificationRepository.find_modification_for_staged_event_and_parameter_dict(stagedEvent.getId(), blockParameter.getParameterDict().getId());
+                modificationRepository.find_modification_for_staged_event_and_parameter_dict(
+                        stagedEvent.getId(),
+                        blockParameter.getScheduleBlock().getId(),
+                        blockParameter.getParameterDict().getId()
+                );
 
         if (modificationOptional.isPresent()) {
             modification = modificationOptional.get();
@@ -55,14 +59,14 @@ public class ModificationServiceImpl implements ModificationService {
 
             if (modificationType.equals(ModificationType.DELETE_PARAMETER)) {
 
-               if (blockParameter.getValue().equals(modification.getOldValue())) {
-                   logger.debug(METHOD_NAME + " Old value of modification is the same as newly assigned parameter value - deleting modification");
-                   modificationRepository.deleteById(modification.getId());
-                   return;
-               } else {
-                   logger.debug(METHOD_NAME + " Old value of modification is different from assigned parameter value - setting modification type to UPDATE_PARAMETER");
-                   modification.setType(ModificationType.UPDATE_PARAMETER.name());
-               }
+                if (blockParameter.getValue().equals(modification.getOldValue())) {
+                    logger.debug(METHOD_NAME + " Old value of modification is the same as newly assigned parameter value - deleting modification");
+                    modificationRepository.deleteById(modification.getId());
+                    return;
+                } else {
+                    logger.debug(METHOD_NAME + " Old value of modification is different from assigned parameter value - setting modification type to UPDATE_PARAMETER");
+                    modification.setType(ModificationType.UPDATE_PARAMETER.name());
+                }
             }
         }
 
@@ -73,6 +77,59 @@ public class ModificationServiceImpl implements ModificationService {
 
         modificationRepository.save(modification);
 
-        logger.info(METHOD_NAME + " Successfully created proper modification for block parameter id: " + blockParameter.getId());
+        logger.info(METHOD_NAME + " Successfully created proper modification for creating block parameter id: " + blockParameter.getId());
+    }
+
+    @Override
+    public void updateParameterWithinBlockModification(BlockParameter blockParameter) {
+        final String METHOD_NAME = "[updateParameterWithinBlockModification]";
+        logger.info(METHOD_NAME + " Creating proper modification for updating block parameter id: " + blockParameter.getId());
+
+        Modification modification = new Modification();
+        modification.setType(String.valueOf(ModificationType.UPDATE_PARAMETER));
+
+        logger.debug(METHOD_NAME + " Searching for staged event");
+        StagedEvent stagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId())
+                .orElseThrow(EntityNotFoundException::new);
+
+        logger.debug(METHOD_NAME + " Searching parameter modification for staged event");
+        Optional<Modification> modificationOptional =
+                modificationRepository.find_modification_for_staged_event_and_parameter_dict(
+                        stagedEvent.getId(),
+                        blockParameter.getScheduleBlock().getId(),
+                        blockParameter.getParameterDict().getId()
+                );
+
+        if (modificationOptional.isPresent()) {
+            modification = modificationOptional.get();
+            ModificationType modificationType = ModificationType.valueOf(modification.getType());
+            logger.debug(METHOD_NAME + " Found modification with type " + modificationType);
+
+            switch (modificationType) {
+                case CREATE_PARAMETER, UPDATE_PARAMETER -> {
+                    if (blockParameter.getValue().equals(modification.getNewValue())) {
+                        logger.debug(METHOD_NAME + " New value of modification is the same as updated parameter value - modification remains the same");
+                        return;
+                    }
+                    logger.debug(METHOD_NAME + " New value of modification is different from updated parameter value - updating new value of modification");
+                }
+                case DELETE_PARAMETER -> {
+                    if (blockParameter.getValue().equals(modification.getOldValue())) {
+                        logger.debug(METHOD_NAME + " Old value of modification is the same as updated parameter value - deleting modification");
+                        modificationRepository.deleteById(modification.getId());
+                        return;
+                    }
+                    logger.debug(METHOD_NAME + " Old value of modification is different from assigned parameter value - setting modification type to UPDATE_PARAMETER");
+                }
+            }
+        }
+        modification.setStagedEvent(stagedEvent);
+        modification.setBlockParameter(blockParameter);
+        modification.setNewValue(blockParameter.getValue());
+        modification.setTimestamp(LocalDateTime.now());
+
+        modificationRepository.save(modification);
+
+        logger.info(METHOD_NAME + " Successfully created proper modification for updating block parameter id: " + blockParameter.getId());
     }
 }

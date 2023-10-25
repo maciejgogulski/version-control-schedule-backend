@@ -163,11 +163,12 @@ public class ScheduleBlockController {
     @PutMapping("/parameter")
     ResponseEntity<String> assignParameterToScheduleBlock(@RequestBody ParameterDto parameterDto) {
         try {
-            scheduleBlockService.assignParameterToBlock(
-                    parameterDto.parameterName(),
-                    parameterDto.value(),
-                    parameterDto.scheduleBlockId()
-            );
+            if (parameterDto.id() == null) {
+                scheduleBlockService.assignParameterToBlock(parameterDto);
+            } else {
+                scheduleBlockService.updateParameterWithinBlock(parameterDto);
+            }
+
             return new ResponseEntity<>("""
                     {
                          status: "Assigned parameter name: %s to schedule block id: %s"
@@ -176,7 +177,7 @@ public class ScheduleBlockController {
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("""
                     {
-                        status: "Schedule block not found."
+                        status: "Entity not found."
                     }
                     """, HttpStatus.NOT_FOUND);
         }
