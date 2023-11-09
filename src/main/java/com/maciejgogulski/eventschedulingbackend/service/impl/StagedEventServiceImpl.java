@@ -11,6 +11,7 @@ import com.maciejgogulski.eventschedulingbackend.repositories.ModificationReposi
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.StagedEventRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,19 +27,12 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
 
     private final ScheduleTagRepository scheduleTagRepository;
 
-    private final ModificationRepository modificationRepository;
-
-    private final BlockParameterRepository blockParameterRepository;
-
     private final ModificationDao modificationDao;
 
     public StagedEventServiceImpl(StagedEventRepository stagedEventRepository,
                                   ScheduleTagRepository scheduleTagRepository,
-                                  ModificationRepository modificationRepository,
-                                  BlockParameterRepository blockParameterRepository, ModificationDao modificationDao) {
+                                  ModificationDao modificationDao) {
         this.scheduleTagRepository = scheduleTagRepository;
-        this.modificationRepository = modificationRepository;
-        this.blockParameterRepository = blockParameterRepository;
         this.modificationDao = modificationDao;
         this.repository = stagedEventRepository;
     }
@@ -80,40 +74,21 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
         return entity;
     }
 
-    public void addModification(ModificationDto modificationDto) {
-        logger.debug("[addModification] Adding new modification referring to block parameter pivot id: " + modificationDto.blockParameterId());
-
-        Modification modification = new Modification();
-        modification.setStagedEvent(
-                repository
-                        .findById(modificationDto.stagedEventId())
-                        .orElseThrow(EntityNotFoundException::new)
-        );
-
-        BlockParameter blockParameter = blockParameterRepository
-                .findById(modificationDto.blockParameterId())
-                .orElseThrow(EntityNotFoundException::new);
-
-        blockParameter.setValue(modificationDto.newValue());
-        blockParameterRepository.save(blockParameter);
-
-        modification.setBlockParameter(
-                blockParameter
-        );
-
-        modification.setType(modificationDto.type().name());
-        modification.setOldValue(modificationDto.oldValue());
-        modification.setNewValue(modificationDto.newValue());
-        modification.setTimestamp(LocalDateTime.now());
-
-        modificationRepository.save(modification);
-        logger.debug("[addModification] Successfully added new modification referring to block parameter pivot id: " + modificationDto.blockParameterId());
-    }
-
     public List<ModificationDto> getModificationsForStagedEvent(Long stagedEventId) {
         logger.debug("[getModificationsForStagedEvent] Getting modifications for staged event id: " + stagedEventId);
         List<ModificationDto> modificationDtoList = modificationDao.get_modifications_for_staged_event(stagedEventId);
         logger.debug("[getModificationsForStagedEvent] Successfully fetched " + modificationDtoList.size() + " modifications for staged event id: " + stagedEventId);
         return modificationDtoList;
     }
+
+    @Transactional
+    public StagedEventDto getLatestStagedEventForSchedule(Long scheduleTagId) {
+        logger.debug("[getLatestStagedEvent] Getting latest staged event for schedule tag id: " + scheduleTagId);
+        StagedEvent stagedEvent = ((StagedEventRepository) repository)
+                .find_latest_staged_event_for_schedule(scheduleTagId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        return convertToDto(stagedEvent);
+    }
+
 }

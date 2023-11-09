@@ -40,14 +40,18 @@ public class ModificationServiceImpl implements ModificationService {
         modification.setType(String.valueOf(ModificationType.CREATE_PARAMETER));
 
 
-        logger.debug(METHOD_NAME + " Searching for staged event");
-        StagedEvent stagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId())
+        logger.debug(METHOD_NAME + " Searching for latest uncommitted staged event");
+        StagedEvent latestUncommittedStagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), false)
                 .orElseThrow(EntityNotFoundException::new);
+
+//        logger.debug(METHOD_NAME + " Searching for latest committed staged event");
+//        StagedEvent latestCommittedStagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), true)
+//                .get();
 
         logger.debug(METHOD_NAME + " Searching for parameter modification for staged event");
         Optional<Modification> modificationOptional =
                 modificationRepository.find_modification_for_staged_event_and_parameter_dict(
-                        stagedEvent.getId(),
+                        latestUncommittedStagedEvent.getId(),
                         blockParameter.getScheduleBlock().getId(),
                         blockParameter.getParameterDict().getId()
                 );
@@ -70,7 +74,7 @@ public class ModificationServiceImpl implements ModificationService {
             }
         }
 
-        modification.setStagedEvent(stagedEvent);
+        modification.setStagedEvent(latestUncommittedStagedEvent);
         modification.setBlockParameter(blockParameter);
         modification.setNewValue(blockParameter.getValue());
         modification.setTimestamp(LocalDateTime.now());
@@ -90,7 +94,7 @@ public class ModificationServiceImpl implements ModificationService {
         modification.setType(ModificationType.UPDATE_PARAMETER.name());
 
         logger.debug(METHOD_NAME + " Searching for staged event");
-        StagedEvent stagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId())
+        StagedEvent stagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), false)
                 .orElseThrow(EntityNotFoundException::new);
 
         logger.debug(METHOD_NAME + " Searching parameter modification for staged event");
@@ -144,7 +148,7 @@ public class ModificationServiceImpl implements ModificationService {
         modification.setType(String.valueOf(ModificationType.DELETE_PARAMETER));
 
         logger.debug(METHOD_NAME + " Searching for staged event");
-        StagedEvent stagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId())
+        StagedEvent stagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), false)
                 .orElseThrow(EntityNotFoundException::new);
 
         logger.debug(METHOD_NAME + " Searching parameter modification for staged event");

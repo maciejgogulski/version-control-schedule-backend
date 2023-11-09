@@ -48,4 +48,10 @@ public class StagedEventController {
         String jsonModifications = objectMapper.writeValueAsString(modificationDtoList);
         return new ResponseEntity<>(jsonModifications, HttpStatus.OK);
     }
+
+    @GetMapping("/schedule-tag/{scheduleTagId}/latest")
+    public ResponseEntity<?> getLatestStagedEventForSchedule(@PathVariable Long scheduleTagId) {
+        StagedEventDto stagedEventDto = stagedEventService.getLatestStagedEventForSchedule(scheduleTagId);
+        return new ResponseEntity<>(stagedEventDto, HttpStatus.OK);
+    }
 }

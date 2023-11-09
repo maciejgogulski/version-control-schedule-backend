@@ -26,4 +26,16 @@ public class ScheduleBlock implements Serializable {
 
     @Column(nullable = false)
     private LocalDateTime endDate;
+
+    @Override
+    public String toString() {
+        return """
+                {
+                    "id": "%s",
+                    "name" : "%s",
+                    "startDate": "%s",
+                    "endDate": "%s"
+                }
+                """.formatted(id.toString(), name, startDate.toString(), endDate.toString());
+    }
 }

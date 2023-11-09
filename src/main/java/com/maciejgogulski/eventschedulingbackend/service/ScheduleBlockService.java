@@ -26,5 +26,5 @@ public interface ScheduleBlockService {
 
     void updateParameterWithinBlock(ParameterDto parameterDto);
 
-    void deleteParameterFormScheduleBlock(Long blockParameterId);
+    void deleteParameterFromScheduleBlock(Long blockParameterId);
 }

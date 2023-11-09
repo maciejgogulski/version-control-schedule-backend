@@ -19,4 +19,15 @@ public class StagedEvent {
     private boolean committed;
 
     private LocalDateTime timestamp;
+
+    @Override
+    public String toString() {
+        return """
+                {
+                    "id": "%s",
+                    "committed" : "%s",
+                    "timestamp": "%s"
+                }
+                """.formatted(id.toString(), committed, timestamp.toString());
+    }
 }

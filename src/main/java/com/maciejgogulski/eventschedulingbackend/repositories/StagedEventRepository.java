@@ -11,5 +11,8 @@ import java.util.Optional;
 public interface StagedEventRepository extends JpaRepository<StagedEvent, Long> {
 
     @Procedure
-    Optional<StagedEvent> find_latest_staged_event_for_block_parameter(Long blockParameterId);
+    Optional<StagedEvent> find_latest_staged_event_for_block_parameter(Long blockParameterId, boolean committed);
+
+    @Procedure
+    Optional<StagedEvent> find_latest_staged_event_for_schedule(Long scheduleTagId);
 }

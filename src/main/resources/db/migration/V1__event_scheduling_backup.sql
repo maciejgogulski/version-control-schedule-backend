@@ -122,52 +122,11 @@ CREATE TABLE public.modification (
 ALTER TABLE public.modification OWNER TO postgres;
 
 --
--- TOC entry 255 (class 1255 OID 16768)
--- Name: find_modification_for_staged_event_and_block_parameter(bigint, bigint); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION public.find_modification_for_staged_event_and_block_parameter(p_staged_event_id bigint, p_block_parameter_id bigint) RETURNS SETOF public.modification
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-    RETURN QUERY SELECT id, staged_event_id, block_parameter_id, type, old_value, new_value, timestamp
-                 FROM modification
-                 WHERE staged_event_id = p_staged_event_id
-                 AND block_parameter_id = p_block_parameter_id
-                 LIMIT 1;
-END;
-$$;
-
-
-ALTER FUNCTION public.find_modification_for_staged_event_and_block_parameter(p_staged_event_id bigint, p_block_parameter_id bigint) OWNER TO postgres;
-
---
--- TOC entry 256 (class 1255 OID 16770)
--- Name: find_modification_for_staged_event_and_parameter_dict(bigint, bigint); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION public.find_modification_for_staged_event_and_parameter_dict(p_staged_event_id bigint, p_parameter_dict_id bigint) RETURNS SETOF public.modification
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-    RETURN QUERY SELECT modification.id, staged_event_id, block_parameter_id, type, old_value, new_value, timestamp
-                 FROM modification
-                    LEFT JOIN block_parameter on modification.block_parameter_id = block_parameter.id
-                 WHERE staged_event_id = p_staged_event_id
-                 AND parameter_dict_id = p_parameter_dict_id
-                 LIMIT 1;
-END;
-$$;
-
-
-ALTER FUNCTION public.find_modification_for_staged_event_and_parameter_dict(p_staged_event_id bigint, p_parameter_dict_id bigint) OWNER TO postgres;
-
---
 -- TOC entry 260 (class 1255 OID 16771)
 -- Name: find_modification_for_staged_event_and_parameter_dict(bigint, bigint, bigint); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
-CREATE FUNCTION public.find_modification_for_staged_event_and_parameter_dict(p_staged_event_id bigint, p_schedule_block_id bigint, p_parameter_dict_id bigint) RETURNS SETOF public.modification
+CREATE OR REPLACE FUNCTION public.find_modification_for_staged_event_and_parameter_dict(p_staged_event_id bigint, p_schedule_block_id bigint, p_parameter_dict_id bigint) RETURNS SETOF public.modification
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -177,7 +136,6 @@ BEGIN
                  WHERE staged_event_id = p_staged_event_id
                  AND parameter_dict_id = p_parameter_dict_id
                  AND block_parameter.schedule_block_id = p_schedule_block_id
-                 AND block_parameter.deleted = false
                  LIMIT 1;
 END;
 $$;

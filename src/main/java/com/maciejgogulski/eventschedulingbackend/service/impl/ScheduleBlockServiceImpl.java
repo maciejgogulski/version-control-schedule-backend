@@ -232,11 +232,11 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     @Override
     @Transactional
-    public void deleteParameterFormScheduleBlock(Long blockParameterId) {
+    public void deleteParameterFromScheduleBlock(Long blockParameterId) {
         logger.info("[deleteParameterFormScheduleBlock] Deleting parameter id: " + blockParameterId);
         BlockParameter blockParameter = blockParameterRepository.findById(blockParameterId)
                 .orElseThrow(EntityNotFoundException::new);
-        blockParameterRepository.deleteById(blockParameterId);
+        blockParameterRepository.delete_block_parameter(blockParameterId);
         modificationService.deleteParameterFromScheduleBlockModification(blockParameter);
         logger.info("[deleteParameterFormScheduleBlock] Successfully deleted parameter id: " + blockParameterId);
     }

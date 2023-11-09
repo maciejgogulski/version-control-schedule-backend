@@ -5,6 +5,8 @@ import lombok.Data;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
+import java.util.List;
+
 @Data
 @Entity
 @SQLDelete(sql = "UPDATE block_parameter SET deleted = true WHERE id=?")
@@ -26,4 +28,9 @@ public class BlockParameter {
 
     @Column(nullable = false)
     private boolean deleted;
+
+    @Override
+    public String toString() {
+        return id.toString() + ": " + value;
+    }
 }
