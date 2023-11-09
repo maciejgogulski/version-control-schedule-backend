@@ -44,10 +44,6 @@ public class ModificationServiceImpl implements ModificationService {
         StagedEvent latestUncommittedStagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), false)
                 .orElseThrow(EntityNotFoundException::new);
 
-//        logger.debug(METHOD_NAME + " Searching for latest committed staged event");
-//        StagedEvent latestCommittedStagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), true)
-//                .get();
-
         logger.debug(METHOD_NAME + " Searching for parameter modification for staged event");
         Optional<Modification> modificationOptional =
                 modificationRepository.find_modification_for_staged_event_and_parameter_dict(
@@ -93,7 +89,7 @@ public class ModificationServiceImpl implements ModificationService {
         Modification modification = new Modification();
         modification.setType(ModificationType.UPDATE_PARAMETER.name());
 
-        logger.debug(METHOD_NAME + " Searching for staged event");
+        logger.debug(METHOD_NAME + " Searching for uncommitted staged event");
         StagedEvent stagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), false)
                 .orElseThrow(EntityNotFoundException::new);
 
@@ -111,9 +107,21 @@ public class ModificationServiceImpl implements ModificationService {
             logger.debug(METHOD_NAME + " Found modification with type " + modificationType);
 
             switch (modificationType) {
-                case CREATE_PARAMETER, UPDATE_PARAMETER -> {
+                case CREATE_PARAMETER -> {
                     if (blockParameter.getValue().equals(modification.getNewValue())) {
                         logger.debug(METHOD_NAME + " New value of modification is the same as updated parameter value - modification remains the same");
+                        return;
+                    }
+                    logger.debug(METHOD_NAME + " New value of modification is different from updated parameter value - updating new value of modification");
+                }
+                case UPDATE_PARAMETER -> {
+                    if (blockParameter.getValue().equals(modification.getNewValue())) {
+                        logger.debug(METHOD_NAME + " New value of modification is the same as updated parameter value - modification remains the same");
+                        return;
+                    }
+                    if (blockParameter.getValue().equals(modification.getOldValue())) {
+                        logger.debug(METHOD_NAME + " Old value of modification is the same as updated parameter value - deleting modification");
+                        modificationRepository.deleteById(modification.getId());
                         return;
                     }
                     logger.debug(METHOD_NAME + " New value of modification is different from updated parameter value - updating new value of modification");
@@ -133,6 +141,31 @@ public class ModificationServiceImpl implements ModificationService {
         modification.setBlockParameter(blockParameter);
         modification.setNewValue(blockParameter.getValue());
         modification.setTimestamp(LocalDateTime.now());
+
+        if (modification.getType().equals(ModificationType.UPDATE_PARAMETER.name())) {
+            logger.debug(METHOD_NAME + " Setting old value of modification");
+            logger.debug(METHOD_NAME + " Searching for committed staged event");
+
+            stagedEvent = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), true)
+                    .orElseThrow(EntityNotFoundException::new);
+
+            logger.debug(METHOD_NAME + " Searching for previous modification");
+            Modification previousModification = modificationRepository.find_modification_for_staged_event_and_parameter_dict(
+                            stagedEvent.getId(),
+                            blockParameter.getScheduleBlock().getId(),
+                            blockParameter.getParameterDict().getId()
+                    )
+                    .orElseThrow(EntityNotFoundException::new);
+
+            if (!(previousModification.getType().equals(ModificationType.UPDATE_PARAMETER.name())
+                    || previousModification.getType().equals(ModificationType.CREATE_PARAMETER.name())
+            )) throw new IllegalArgumentException("Previous modification can't be delete parameter");
+
+            if (previousModification.getNewValue() == null)
+                throw new IllegalArgumentException("Previous update modification must have the new value");
+
+            modification.setOldValue(previousModification.getNewValue());
+        }
 
         modificationRepository.save(modification);
 
@@ -179,7 +212,7 @@ public class ModificationServiceImpl implements ModificationService {
         }
         modification.setStagedEvent(stagedEvent);
         modification.setBlockParameter(blockParameter);
-        modification.setNewValue(blockParameter.getValue());
+        modification.setOldValue(blockParameter.getValue());
         modification.setTimestamp(LocalDateTime.now());
 
         modificationRepository.save(modification);
