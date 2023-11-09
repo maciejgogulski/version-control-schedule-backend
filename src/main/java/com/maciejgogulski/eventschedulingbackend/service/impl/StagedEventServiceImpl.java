@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedEventDto> {
@@ -89,6 +90,26 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
                 .orElseThrow(EntityNotFoundException::new);
 
         return convertToDto(stagedEvent);
+    }
+
+    @Transactional
+    public void commitStagedEvent(Long stagedEventId) {
+        // TODO: Tworzenie wiadomości, zabezpieczenie przed zacommitowaniem bez żadnych zmian.
+        logger.debug("[commitStagedEvent] Committing staged event with id: " + stagedEventId);
+        ((StagedEventRepository) repository).commit_staged_event(stagedEventId);
+        logger.debug("[commitStagedEvent] Committed staged event with id: " + stagedEventId);
+        logger.debug("[commitStagedEvent] Creating new staged event.");
+
+        StagedEvent previousStagedEvent = repository.findById(stagedEventId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        StagedEvent stagedEvent = new StagedEvent();
+        stagedEvent.setScheduleTag(previousStagedEvent.getScheduleTag());
+        stagedEvent.setCommitted(false);
+        stagedEvent.setTimestamp(LocalDateTime.now());
+        repository.save(stagedEvent);
+
+        logger.debug("[commitStagedEvent] Created new staged event with id: " );
     }
 
 }

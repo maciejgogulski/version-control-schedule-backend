@@ -17,8 +17,6 @@ import java.util.List;
 @RequestMapping("/staged-event")
 public class StagedEventController {
 
-    private final Logger logger = LoggerFactory.getLogger(StagedEventController.class);
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final StagedEventServiceImpl stagedEventService;
@@ -29,9 +27,7 @@ public class StagedEventController {
 
     @PostMapping
     public ResponseEntity<String> addStagedEvent(@RequestBody StagedEventDto stagedEventDto) {
-        logger.info("[addStagedEvent] Creating staged event for schedule tag with id: " + stagedEventDto.scheduleTagId());
         stagedEventDto = stagedEventService.create(stagedEventDto);
-        logger.info("[addStagedEvent] Successfully created staged event with id: " + stagedEventDto.id());
 
         String responseBody;
         try {
@@ -53,5 +49,15 @@ public class StagedEventController {
     public ResponseEntity<?> getLatestStagedEventForSchedule(@PathVariable Long scheduleTagId) {
         StagedEventDto stagedEventDto = stagedEventService.getLatestStagedEventForSchedule(scheduleTagId);
         return new ResponseEntity<>(stagedEventDto, HttpStatus.OK);
+    }
+
+    @PutMapping("/{stagedEventId}/commit")
+    public ResponseEntity<?> commitStagedEvent(@PathVariable Long stagedEventId) {
+        stagedEventService.commitStagedEvent(stagedEventId);
+        return new ResponseEntity<>("""
+                {
+                    "status": "Commited staged event with id: %s"
+                }
+                """.formatted(stagedEventId), HttpStatus.OK);
     }
 }

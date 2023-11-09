@@ -13,7 +13,7 @@ public class StagedEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private ScheduleTag scheduleTag;
 
     private boolean committed;

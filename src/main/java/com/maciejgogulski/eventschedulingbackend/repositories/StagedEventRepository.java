@@ -15,4 +15,7 @@ public interface StagedEventRepository extends JpaRepository<StagedEvent, Long> 
 
     @Procedure
     Optional<StagedEvent> find_latest_staged_event_for_schedule(Long scheduleTagId);
+
+    @Procedure
+    void commit_staged_event(Long stagedEventId);
 }
