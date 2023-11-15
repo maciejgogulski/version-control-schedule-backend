@@ -159,7 +159,7 @@ public class ModificationServiceImpl implements ModificationService {
 
             if (!(previousModification.getType().equals(ModificationType.UPDATE_PARAMETER.name())
                     || previousModification.getType().equals(ModificationType.CREATE_PARAMETER.name())
-            )) throw new IllegalArgumentException("Previous modification can't be delete parameter");
+            )) throw new IllegalArgumentException("Previous modification can't be DELETE_PARAMETER");
 
             if (previousModification.getNewValue() == null)
                 throw new IllegalArgumentException("Previous update modification must have the new value");

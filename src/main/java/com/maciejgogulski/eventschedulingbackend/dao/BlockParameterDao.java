@@ -37,9 +37,6 @@ public class BlockParameterDao {
             );
         }
 
-        if (parameterDtoList.isEmpty()) {
-            throw new EntityNotFoundException("Parameters not found");
-        }
         return parameterDtoList;
     }
 }

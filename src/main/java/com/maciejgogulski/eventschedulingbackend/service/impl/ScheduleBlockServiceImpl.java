@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -171,6 +170,7 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
     }
 
     @Override
+    @Transactional
     public void assignParameterToBlock(ParameterDto parameterDto) {
         String parameterName = parameterDto.parameterName();
         String parameterValue = parameterDto.value();
@@ -190,14 +190,23 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
             parameterDictRepository.save(parameterDict);
         }
 
-        BlockParameter blockParameter = new BlockParameter();
+        ScheduleBlock scheduleBlock = scheduleBlockRepository.findById(blockId)
+                 .orElseThrow(EntityNotFoundException::new);
+
+        BlockParameter blockParameter = blockParameterRepository
+                .find_deleted_block_parameter_by_block_id_parameter_dict_pair(scheduleBlock.getId(), parameterDict.getId())
+                .orElse(new BlockParameter());
+
         blockParameter.setScheduleBlock(
-                scheduleBlockRepository.findById(blockId).orElseThrow(EntityNotFoundException::new)
+                scheduleBlock
         );
         blockParameter.setParameterDict(
                 parameterDict
         );
         blockParameter.setValue(parameterValue);
+
+        blockParameter.setDeleted(false);
+
         blockParameterRepository.save(blockParameter);
 
         modificationService.assignParameterToScheduleBlockModification(blockParameter);
