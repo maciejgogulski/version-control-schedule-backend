@@ -179,8 +179,6 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         block.setStartDate(startDate);
         block.setEndDate(endDate);
 
-        logger.trace("[parseDtoToBlock] Successfully parsed DTO to block");
-
         return block;
     }
 
@@ -191,7 +189,6 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         String startDate = block.getStartDate().format(formatter);
         String endDate = block.getEndDate().format(formatter);
 
-        logger.trace("[parseDtoToBlock] Successfully parsed block to DTO");
         return new ScheduleBlockDto(
                 block.getId(),
                 block.getScheduleTag().getId(),
