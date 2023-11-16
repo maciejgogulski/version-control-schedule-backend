@@ -1,7 +1,9 @@
 package com.maciejgogulski.eventschedulingbackend.service;
 
+import com.maciejgogulski.eventschedulingbackend.domain.ScheduleBlock;
 import com.maciejgogulski.eventschedulingbackend.dto.ParameterDto;
 import com.maciejgogulski.eventschedulingbackend.dto.ScheduleBlockDto;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -11,6 +13,8 @@ import java.util.List;
 public interface ScheduleBlockService {
 
     ScheduleBlockDto addScheduleBlock(ScheduleBlockDto scheduleBlockDto) throws ParseException;
+
+    void assignRequiredParameters(ScheduleBlock scheduleBlock);
 
     ScheduleBlockDto getScheduleBlock(Long scheduleBlockId);
 

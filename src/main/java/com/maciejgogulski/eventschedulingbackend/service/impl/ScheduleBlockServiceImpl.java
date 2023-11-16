@@ -54,14 +54,46 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
         this.blockParameterDao = blockParameterDao;
         this.modificationService = modificationService;
     }
-
+    
     @Override
+    @Transactional
     public ScheduleBlockDto addScheduleBlock(ScheduleBlockDto scheduleBlockDto) {
         logger.info("[addScheduleBlock] Creating schedule block with name: " + scheduleBlockDto.name());
+        
         ScheduleBlock scheduleBlock = parseDtoToBlock(scheduleBlockDto);
         scheduleBlock = scheduleBlockRepository.save(scheduleBlock);
+
+        assignRequiredParameters(scheduleBlock);
+
         logger.info("[addScheduleBlock] Successfully created schedule block with name: " + scheduleBlockDto.name());
         return parseBlockToDto(scheduleBlock);
+    }
+
+    @Override
+    @Transactional
+    public void assignRequiredParameters(ScheduleBlock scheduleBlock) {
+        assignParameterToBlock(new ParameterDto(
+                null,
+                scheduleBlock.getId(),
+                "Name",
+                scheduleBlock.getName()
+        ));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        assignParameterToBlock(new ParameterDto(
+                null,
+                scheduleBlock.getId(),
+                "Start date",
+                formatter.format(scheduleBlock.getStartDate())
+        ));
+
+        assignParameterToBlock(new ParameterDto(
+                null,
+                scheduleBlock.getId(),
+                "End date",
+                formatter.format(scheduleBlock.getEndDate())
+        ));
     }
 
     @Override
