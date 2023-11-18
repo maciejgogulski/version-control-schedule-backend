@@ -39,10 +39,9 @@ public class StagedEventController {
     }
 
     @GetMapping("{stagedEventId}/modification")
-    public ResponseEntity<String> getModificationsForStagedEvent(@PathVariable Long stagedEventId) throws JsonProcessingException {
+    public ResponseEntity<?> getModificationsForStagedEvent(@PathVariable Long stagedEventId) throws JsonProcessingException {
         List<ModificationDto> modificationDtoList = stagedEventService.getModificationsForStagedEvent(stagedEventId);
-        String jsonModifications = objectMapper.writeValueAsString(modificationDtoList);
-        return new ResponseEntity<>(jsonModifications, HttpStatus.OK);
+        return new ResponseEntity<>(modificationDtoList, HttpStatus.OK);
     }
 
     @GetMapping("/schedule-tag/{scheduleTagId}/latest")
