@@ -18,15 +18,14 @@ public record ModificationDto(
 
     @Override
     public String toString() {
-        String prefix = "W bloku " + blockName;
         return switch (type) {
             case CREATE_PARAMETER ->
-                    prefix + " utworzono parametr " + parameterName;
+                    "utworzono parametr " + parameterName;
             case UPDATE_PARAMETER ->
-                prefix + " zmieniono parametr " + parameterName
+                "zmieniono parametr " + parameterName
                         + " z " + oldValue + " na " + newValue;
             case DELETE_PARAMETER ->
-                    prefix + " usunięto parametr " + parameterName;
+                    "usunięto parametr " + parameterName;
             default -> "Modification " + id;
         };
     }

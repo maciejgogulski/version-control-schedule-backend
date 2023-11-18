@@ -10,11 +10,16 @@ import com.maciejgogulski.eventschedulingbackend.repositories.AddresseeRepositor
 import com.maciejgogulski.eventschedulingbackend.repositories.MessageRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.StagedEventRepository;
 import com.maciejgogulski.eventschedulingbackend.service.MessageService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,23 +38,35 @@ public class MessageServiceImpl implements MessageService {
 
     private final JavaMailSender mailSender;
 
-    public MessageServiceImpl(MessageRepository messageRepository, StagedEventRepository stagedEventRepository, AddresseeRepository addresseeRepository, ModificationDao modificationDao, JavaMailSender mailSender) {
+    private final TemplateEngine templateEngine;
+
+    @Value("${e-mail.template-filename}")
+    private String templateFile;
+
+    public MessageServiceImpl(MessageRepository messageRepository, StagedEventRepository stagedEventRepository, AddresseeRepository addresseeRepository, ModificationDao modificationDao, JavaMailSender mailSender, TemplateEngine templateEngine) {
         this.messageRepository = messageRepository;
         this.stagedEventRepository = stagedEventRepository;
         this.addresseeRepository = addresseeRepository;
         this.modificationDao = modificationDao;
         this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
     }
 
     @Override
     @Transactional
-    public void notifyAddresseesAboutModifications(Long stagedEventId) {
+    public void notifyAddresseesAboutModifications(Long stagedEventId) throws MessagingException {
         StagedEvent stagedEvent = stagedEventRepository.findById(stagedEventId)
                 .orElseThrow(EntityNotFoundException::new);
         ScheduleTag scheduleTag = stagedEvent.getScheduleTag();
         List<Addressee> addressees = addresseeRepository.get_addressees_for_schedule_tag(scheduleTag.getId());
         List<ModificationDto> modifications = modificationDao.get_modifications_for_staged_event(stagedEventId);
-        String content = constructMessage(scheduleTag, modifications);
+
+        String subject = "Zmiany w planie " + scheduleTag.getName();
+
+        Context context = new Context();
+        context.setVariable("subject", subject);
+        context.setVariable("modifications", modifications);
+        String htmlContent = templateEngine.process(templateFile, context);
 
         List<String> emails = new ArrayList<>();
         List<Message> messages = new ArrayList<>();
@@ -60,7 +77,7 @@ public class MessageServiceImpl implements MessageService {
             Message message = new Message();
             message.setStagedEvent(stagedEvent);
             message.setAddressee(addressee);
-            message.setContent(content);
+            message.setContent(htmlContent);
             message.setSendAt(new Date());
 
             messages.add(message);
@@ -68,10 +85,12 @@ public class MessageServiceImpl implements MessageService {
 
         messageRepository.saveAll(messages);
 
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(emails.toArray(new String[0]));
-        mailMessage.setSubject("Zmiany w planie " + scheduleTag.getName());
-        mailMessage.setText(content);
+        MimeMessage mailMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mailMessage, true);
+
+        helper.setTo(emails.toArray(new String[0]));
+        helper.setSubject(subject);
+        mailMessage.setContent(htmlContent, "text/html; charset=utf-8");
 
         mailSender.send(mailMessage);
     }
@@ -93,4 +112,10 @@ public class MessageServiceImpl implements MessageService {
         builder.append("Prosimy o zapoznanie się z powyższymi zmianami.\n");
         return builder.toString();
     }
+
+//    private List<BlockWithModificationsDto> groupModificationsByBlocks(List<ModificationDto> modifications) {
+//        List<BlockWithModificationsDto> groupedBlocks = new ArrayList<>();
+//
+//
+//    }
 }

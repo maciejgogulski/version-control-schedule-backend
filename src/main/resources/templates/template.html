@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${subject}"> </title>
+</head>
+<style>
+</style>
+<body>
+<h1 th:text="${subject}"></h1>
+<table>
+    <thead>
+    <tr>
+        <td>Blok</td>
+        <td>Rodzaj zmiany</td>
+        <td>Parametr</td>
+        <td>Nowa wartość</td>
+        <td>Poprzednia wartość</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="modification, index: *{modifications}">
+        <td th:text="${modification.blockName()}"></td>
+        <td th:text="${modification.type()}"></td>
+        <td th:text="${modification.parameterName()}"></td>
+        <td th:text="${modification.newValue()}"></td>
+        <td th:text="${modification.oldValue()}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

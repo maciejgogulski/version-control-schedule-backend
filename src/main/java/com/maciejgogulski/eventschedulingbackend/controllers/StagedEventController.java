@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maciejgogulski.eventschedulingbackend.dto.ModificationDto;
 import com.maciejgogulski.eventschedulingbackend.dto.StagedEventDto;
 import com.maciejgogulski.eventschedulingbackend.service.impl.StagedEventServiceImpl;
+import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class StagedEventController {
     }
 
     @GetMapping("{stagedEventId}/modification")
-    public ResponseEntity<?> getModificationsForStagedEvent(@PathVariable Long stagedEventId) throws JsonProcessingException {
+    public ResponseEntity<?> getModificationsForStagedEvent(@PathVariable Long stagedEventId) {
         List<ModificationDto> modificationDtoList = stagedEventService.getModificationsForStagedEvent(stagedEventId);
         return new ResponseEntity<>(modificationDtoList, HttpStatus.OK);
     }
@@ -51,7 +52,7 @@ public class StagedEventController {
     }
 
     @PutMapping("/{stagedEventId}/commit")
-    public ResponseEntity<?> commitStagedEvent(@PathVariable Long stagedEventId) {
+    public ResponseEntity<?> commitStagedEvent(@PathVariable Long stagedEventId) throws MessagingException {
         stagedEventService.commitStagedEvent(stagedEventId);
         return new ResponseEntity<>("""
                 {

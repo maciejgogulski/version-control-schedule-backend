@@ -7,6 +7,7 @@ import com.maciejgogulski.eventschedulingbackend.dto.StagedEventDto;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.StagedEventRepository;
 import com.maciejgogulski.eventschedulingbackend.service.MessageService;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -91,7 +92,7 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
     }
 
     @Transactional
-    public void commitStagedEvent(Long stagedEventId) {
+    public void commitStagedEvent(Long stagedEventId) throws MessagingException {
         logger.debug("[commitStagedEvent] Committing staged event with id: " + stagedEventId);
         ((StagedEventRepository) repository).commit_staged_event(stagedEventId);
         logger.debug("[commitStagedEvent] Committed staged event with id: " + stagedEventId);
