@@ -1,15 +1,12 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
 import com.maciejgogulski.eventschedulingbackend.dao.ModificationDao;
-import com.maciejgogulski.eventschedulingbackend.domain.BlockParameter;
-import com.maciejgogulski.eventschedulingbackend.domain.Modification;
 import com.maciejgogulski.eventschedulingbackend.domain.StagedEvent;
 import com.maciejgogulski.eventschedulingbackend.dto.ModificationDto;
 import com.maciejgogulski.eventschedulingbackend.dto.StagedEventDto;
-import com.maciejgogulski.eventschedulingbackend.repositories.BlockParameterRepository;
-import com.maciejgogulski.eventschedulingbackend.repositories.ModificationRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.StagedEventRepository;
+import com.maciejgogulski.eventschedulingbackend.service.MessageService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -17,9 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedEventDto> {
@@ -30,11 +25,14 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
 
     private final ModificationDao modificationDao;
 
+    private final MessageService messageService;
+
     public StagedEventServiceImpl(StagedEventRepository stagedEventRepository,
                                   ScheduleTagRepository scheduleTagRepository,
-                                  ModificationDao modificationDao) {
+                                  ModificationDao modificationDao, MessageService messageService) {
         this.scheduleTagRepository = scheduleTagRepository;
         this.modificationDao = modificationDao;
+        this.messageService = messageService;
         this.repository = stagedEventRepository;
     }
 
@@ -94,12 +92,13 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
 
     @Transactional
     public void commitStagedEvent(Long stagedEventId) {
-        // TODO: Tworzenie wiadomości, zabezpieczenie przed zacommitowaniem bez żadnych zmian.
         logger.debug("[commitStagedEvent] Committing staged event with id: " + stagedEventId);
         ((StagedEventRepository) repository).commit_staged_event(stagedEventId);
         logger.debug("[commitStagedEvent] Committed staged event with id: " + stagedEventId);
-        logger.debug("[commitStagedEvent] Creating new staged event.");
 
+        messageService.notifyAddresseesAboutModifications(stagedEventId);
+
+        logger.debug("[commitStagedEvent] Creating new staged event.");
         StagedEvent previousStagedEvent = repository.findById(stagedEventId)
                 .orElseThrow(EntityNotFoundException::new);
 

@@ -15,11 +15,11 @@ public class Message {
 
     private Date sendAt;
 
-    private boolean acceptedByAddressee;
+    private String content;
 
     @ManyToOne
     private Addressee addressee;
 
     @ManyToOne
-    private Event event;
+    private StagedEvent stagedEvent;
 }
