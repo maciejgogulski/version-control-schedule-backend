@@ -1,71 +1,61 @@
 package com.maciejgogulski.eventschedulingbackend.service.impl;
 
-import com.maciejgogulski.eventschedulingbackend.domain.*;
+import com.maciejgogulski.eventschedulingbackend.config.TestConfig;
+import com.maciejgogulski.eventschedulingbackend.domain.BlockParameter;
+import com.maciejgogulski.eventschedulingbackend.domain.Modification;
+import com.maciejgogulski.eventschedulingbackend.enums.ModificationType;
+import com.maciejgogulski.eventschedulingbackend.repositories.BlockParameterRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.ModificationRepository;
-import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
-import com.maciejgogulski.eventschedulingbackend.repositories.StagedEventRepository;
+import com.maciejgogulski.eventschedulingbackend.service.ModificationService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.flywaydb.test.annotation.FlywayTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.event.annotation.BeforeTestMethod;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = TestConfig.class)
 @SpringBootTest
-class ModificationServiceImplTest {
+public class ModificationServiceImplTest {
 
     @Autowired
-    private ModificationServiceImpl underTest;
+    private ModificationService modificationService;
+
+    @Autowired
+    private BlockParameterRepository blockParameterRepository;
 
     @Autowired
     private ModificationRepository modificationRepository;
 
-    @Autowired
-    private StagedEventRepository stagedEventRepository;
-
-    @Autowired
-    private ScheduleTagRepository scheduleTagRepository;
-
-    @BeforeTestMethod(value = "shouldCreateModificationCreateParameter")
-    void setUp() {
-        
-    }
+    @BeforeAll
+    @FlywayTest
+    public static void before() {}
 
     @Test
     @Transactional
-    public void shouldCreateModificationCreateParameter() {
-        // Create test data
-        BlockParameter blockParameter = new BlockParameter(); // Create and set necessary attributes
+    public void shouldCreateModificationCreateParameter_updateParameterWithinBlockModification() {
+        // given
+        BlockParameter blockParameter = blockParameterRepository.findById(1L)
+                .orElseThrow(EntityNotFoundException::new);
 
-        StagedEvent stagedEvent = new StagedEvent(); // Create and set necessary attributes
-        stagedEventRepository.save(stagedEvent);
+        blockParameter.setValue("102");
 
-        Modification modification = new Modification(); // Create and set necessary attributes
-        modificationRepository.save(modification);
+        // when
+        modificationService.updateParameterWithinBlockModification(blockParameter);
 
-        // Call the service method
-        underTest.assignParameterToScheduleBlockModification(blockParameter);
+        // then
+        Modification modification = modificationRepository
+                .find_modification_for_staged_event_and_parameter_dict(1L, 1L, 1L)
+                .orElseThrow(EntityNotFoundException::new);
 
-        // Retrieve the modified data from the database
-        Modification savedModification = modificationRepository.findById(modification.getId()).orElse(null);
-        StagedEvent latestUncommittedStagedEvent = stagedEventRepository.findById(stagedEvent.getId()).orElse(null);
-
-        // Assertions to validate the results
-        assertNotNull(savedModification);
-        assertNotNull(latestUncommittedStagedEvent);
-        // Add more assertions as needed to validate the state of the objects and the database.
-
-        // Clean up (optional)
-        modificationRepository.delete(savedModification);
-        stagedEventRepository.delete(latestUncommittedStagedEvent);
-    }
-
-    @Test
-    void updateParameterWithinBlockModification() {
-    }
-
-    @Test
-    void deleteParameterFromScheduleBlockModification() {
+        Assertions.assertEquals(ModificationType.CREATE_PARAMETER.name(), modification.getType());
+        Assertions.assertNull(modification.getOldValue());
+        Assertions.assertEquals("102", modification.getNewValue());
     }
 }

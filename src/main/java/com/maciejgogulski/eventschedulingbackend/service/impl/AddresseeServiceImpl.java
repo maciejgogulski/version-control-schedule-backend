@@ -3,6 +3,7 @@ package com.maciejgogulski.eventschedulingbackend.service.impl;
 import com.maciejgogulski.eventschedulingbackend.domain.Addressee;
 import com.maciejgogulski.eventschedulingbackend.dto.AddresseeDto;
 import com.maciejgogulski.eventschedulingbackend.repositories.AddresseeRepository;
+import com.maciejgogulski.eventschedulingbackend.service.AddresseeService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Service
-public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDto> {
+public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDto> implements AddresseeService {
 
     private final Logger logger = LoggerFactory.getLogger(AddresseeServiceImpl.class);
 
@@ -54,6 +55,7 @@ public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDt
     }
 
     @Transactional
+    @Override
     public List<AddresseeDto> getAddressesByScheduleTagId(Long scheduleTagId) {
         final String METHOD_TAG = "[getAddressesByScheduleTagId] ";
         logger.debug(METHOD_TAG + "Getting addressees for schedule tag id: " + scheduleTagId);
@@ -68,6 +70,7 @@ public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDt
         return dtoList;
     }
 
+    @Override
     @Transactional
     public void assignAddresseeToScheduleTagId(Long addresseeId, Long scheduleTagId) throws AlreadyBoundException {
         final String METHOD_TAG = "[assignAddresseeToScheduleTagId] ";

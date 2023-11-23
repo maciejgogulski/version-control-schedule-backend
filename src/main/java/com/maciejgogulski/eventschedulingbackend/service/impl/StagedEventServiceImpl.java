@@ -7,6 +7,7 @@ import com.maciejgogulski.eventschedulingbackend.dto.StagedEventDto;
 import com.maciejgogulski.eventschedulingbackend.repositories.ScheduleTagRepository;
 import com.maciejgogulski.eventschedulingbackend.repositories.StagedEventRepository;
 import com.maciejgogulski.eventschedulingbackend.service.MessageService;
+import com.maciejgogulski.eventschedulingbackend.service.StagedEventService;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedEventDto> {
+public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedEventDto> implements StagedEventService {
 
     private final Logger logger = LoggerFactory.getLogger(StagedEventServiceImpl.class);
 
@@ -74,6 +75,7 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
         return entity;
     }
 
+    @Override
     public List<ModificationDto> getModificationsForStagedEvent(Long stagedEventId) {
         logger.debug("[getModificationsForStagedEvent] Getting modifications for staged event id: " + stagedEventId);
         List<ModificationDto> modificationDtoList = modificationDao.get_modifications_for_staged_event(stagedEventId);
@@ -82,6 +84,7 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
     }
 
     @Transactional
+    @Override
     public StagedEventDto getLatestStagedEventForSchedule(Long scheduleTagId) {
         logger.debug("[getLatestStagedEvent] Getting latest staged event for schedule tag id: " + scheduleTagId);
         StagedEvent stagedEvent = ((StagedEventRepository) repository)
@@ -92,6 +95,7 @@ public class StagedEventServiceImpl extends CrudServiceImpl<StagedEvent, StagedE
     }
 
     @Transactional
+    @Override
     public void commitStagedEvent(Long stagedEventId) throws MessagingException {
         logger.debug("[commitStagedEvent] Committing staged event with id: " + stagedEventId);
         ((StagedEventRepository) repository).commit_staged_event(stagedEventId);
