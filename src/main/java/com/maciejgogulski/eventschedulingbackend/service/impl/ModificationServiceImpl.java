@@ -164,6 +164,11 @@ public class ModificationServiceImpl implements ModificationService {
             if (previousModification.getNewValue() == null)
                 throw new IllegalArgumentException("Previous update modification must have the new value");
 
+            if (modification.getNewValue().equals(previousModification.getNewValue())) {
+                logger.info(METHOD_NAME + " Previous modifications new value is the same as the new value");
+                return;
+            }
+
             modification.setOldValue(previousModification.getNewValue());
         }
 

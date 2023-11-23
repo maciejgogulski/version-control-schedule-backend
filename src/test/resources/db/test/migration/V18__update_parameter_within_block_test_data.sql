@@ -1,35 +1,111 @@
 -- Update parameter within schedule block
 
 -- should CREATE_PARAMETER
--- case exists CREATE_PARAMETER_MODIFICATION
 INSERT INTO schedule_tag
-    (id, name)
+    (name)
 VALUES
-    (1, 'Test schedule');
+    ('Test schedule');
 
 INSERT INTO schedule_block
-    (id, schedule_tag_id, name, start_date, end_date)
+    (schedule_tag_id, name, start_date, end_date)
 VALUES
-    (1, 1, 'Test block', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    (1, 'Test block', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO parameter_dict
-    (id, name)
+    (name)
 VALUES
-    (4, 'Room');
+    ('Room');
 
 INSERT INTO staged_event
-    (id, schedule_tag_id)
+    (schedule_tag_id)
 VALUES
-    (1, 1);
+    (1);
 
 INSERT INTO block_parameter
-(id, parameter_dict_id, schedule_block_id, value)
+(parameter_dict_id, schedule_block_id, value)
 VALUES
-(1, 1, 1, '101');
+(4, 1, '101');
 
 INSERT INTO modification
-    (id, staged_event_id, block_parameter_id, type, old_value, new_value, timestamp)
+    (staged_event_id, block_parameter_id, type, old_value, new_value, timestamp)
 VALUES
-    (1, 1, 1, 'CREATE_PARAMETER', NULL, '101', CURRENT_TIMESTAMP)
+    (1, 1, 'CREATE_PARAMETER', NULL, '101', CURRENT_TIMESTAMP);
+
+
+-----------------------------------------------------------------------------------------------
+-- should UPDATE_PARAMETER
+-----------------------------------------------------------------------------------------------
+INSERT INTO schedule_tag
+(name)
+VALUES
+    ('Test schedule 2');
+
+INSERT INTO schedule_block
+(schedule_tag_id, name, start_date, end_date)
+VALUES
+    (2, 'Test block 2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+
+INSERT INTO staged_event
+(schedule_tag_id, committed)
+VALUES
+    (2, true);
+
+INSERT INTO parameter_dict
+(name)
+VALUES
+    ('Mode');
+
+INSERT INTO block_parameter
+(parameter_dict_id, schedule_block_id, value)
+VALUES
+    (5, 2, 'Remote');
+
+INSERT INTO modification
+(staged_event_id, block_parameter_id, type, old_value, new_value, timestamp)
+VALUES
+    (2, 2, 'CREATE_PARAMETER', NULL, 'Remote', CURRENT_TIMESTAMP);
+
+INSERT INTO staged_event
+(schedule_tag_id)
+VALUES
+    (2);
+
+-----------------------------------------------------------------------------------------------
+-- should delete modification
+-----------------------------------------------------------------------------------------------
+INSERT INTO parameter_dict
+(name)
+VALUES
+    ('Teacher');
+
+INSERT INTO block_parameter
+(parameter_dict_id, schedule_block_id, value)
+VALUES
+    (6, 2, 'Mark Robertson');
+
+INSERT INTO modification
+(staged_event_id, block_parameter_id, type, old_value, new_value, timestamp)
+VALUES
+    (3, 3, 'UPDATE_PARAMETER', 'Robert Markson', 'Mark Robertson', CURRENT_TIMESTAMP);
+
+-----------------------------------------------------------------------------------------------
+-- should not create modification
+-----------------------------------------------------------------------------------------------
+INSERT INTO parameter_dict
+(name)
+VALUES
+    ('Purpose');
+
+INSERT INTO block_parameter
+(parameter_dict_id, schedule_block_id, value)
+VALUES
+    (7, 2, 'Learn students XYZ');
+
+INSERT INTO modification
+(staged_event_id, block_parameter_id, type, old_value, new_value, timestamp)
+VALUES
+    (2, 4, 'CREATE_PARAMETER', NULL, 'Learn students XYZ', CURRENT_TIMESTAMP);
+
 
 
