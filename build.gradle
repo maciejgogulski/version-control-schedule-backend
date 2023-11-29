@@ -41,6 +41,11 @@ dependencies {
 
     implementation 'org.flywaydb:flyway-core'
     testImplementation group: 'org.flywaydb.flyway-test-extensions', name: 'flyway-spring-test', version: '9.5.0'
+
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5';
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5';
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5';
+
 }
 
 tasks.named('test') {

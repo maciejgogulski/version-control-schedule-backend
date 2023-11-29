@@ -1,14 +1,11 @@
-package com.intrasoft.navigator2.backend.config;
+package com.maciejgogulski.eventschedulingbackend.config;
 
-import com.intrasoft.navigator2.backend.domain.mysql.User;
+import com.maciejgogulski.eventschedulingbackend.domain.User;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class UserDetailsImpl implements UserDetails {
 
@@ -21,9 +18,6 @@ public class UserDetailsImpl implements UserDetails {
     public UserDetailsImpl(User user) {
         username = user.getUsername();
         password = user.getPassword();
-        authorityList = Arrays.stream(user.getRoles().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
     }
 
     @Override

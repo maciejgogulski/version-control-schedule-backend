@@ -1,33 +1,35 @@
-package com.intrasoft.navigator2.backend.services.impl;
+package com.maciejgogulski.eventschedulingbackend.service.impl;
 
-import com.intrasoft.navigator2.backend.config.UserDetailsImpl;
-import com.intrasoft.navigator2.backend.domain.mysql.User;
-import com.intrasoft.navigator2.backend.repositories.mysql.UserRepository;
-import com.intrasoft.navigator2.backend.services.UserService;
+import com.maciejgogulski.eventschedulingbackend.config.JwtService;
+import com.maciejgogulski.eventschedulingbackend.config.UserDetailsImpl;
+import com.maciejgogulski.eventschedulingbackend.domain.User;
+import com.maciejgogulski.eventschedulingbackend.dto.AuthRequestDto;
+import com.maciejgogulski.eventschedulingbackend.dto.AuthResponseDto;
+import com.maciejgogulski.eventschedulingbackend.repositories.UserRepository;
+import com.maciejgogulski.eventschedulingbackend.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-/**
- * Klasa implementująca interfejs z gotowego komponentu spring security do obsługi użytkowników.
- */
-@Component
+@Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService, UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(String.valueOf(UserDetailsImpl.class));
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+    private final AuthenticationManager authenticationManager;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -38,8 +40,22 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("Nie znaleziono użytkownika " + username));
     }
 
-    public void addUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+
+    @Override
+    public AuthResponseDto login(AuthRequestDto request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
+        var user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow();
+
+        var jwt = jwtService.generateJwt(user);
+
+        return AuthResponseDto.builder()
+                .token(jwt)
+                .build();
     }
 }

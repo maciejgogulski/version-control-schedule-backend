@@ -1,11 +1,10 @@
-CREATE OR REPLACE FUNCTION public.get_addressees_for_schedule_tag(p_schedule_tag_id bigint) RETURNS SETOF public.addressee
-    LANGUAGE plpgsql
-AS
-$$
-BEGIN
-    RETURN QUERY SELECT addressee.id, email, first_name, last_name, password, user_name, addressee.deleted
-                 FROM addressee
-                          INNER JOIN schedule_tag_addressee sta on addressee.id = sta.addressee_id
-                 WHERE sta.schedule_tag_id = p_schedule_tag_id;
-END;
-$$;
+CREATE TABLE "user" (
+    id BIGSERIAL PRIMARY KEY,
+    username varchar NOT NULL UNIQUE,
+    password varchar NOT NULL
+);
+
+INSERT INTO "user"
+(username, password)
+VALUES
+('admin', '$2a$12$FUwELmOkE3AQixWDd6VS2eCgWz03fGZVaZGRKzrGKMmii9./.H8G6');

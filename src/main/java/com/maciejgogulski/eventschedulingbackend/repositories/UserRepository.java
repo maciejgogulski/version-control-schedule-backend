@@ -1,6 +1,6 @@
-package com.intrasoft.navigator2.backend.repositories.mysql;
+package com.maciejgogulski.eventschedulingbackend.repositories;
 
-import com.intrasoft.navigator2.backend.domain.mysql.User;
+import com.maciejgogulski.eventschedulingbackend.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
