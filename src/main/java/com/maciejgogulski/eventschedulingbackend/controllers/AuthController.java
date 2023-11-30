@@ -2,7 +2,7 @@ package com.maciejgogulski.eventschedulingbackend.controllers;
 
 import com.maciejgogulski.eventschedulingbackend.dto.AuthRequestDto;
 import com.maciejgogulski.eventschedulingbackend.dto.AuthResponseDto;
-import com.maciejgogulski.eventschedulingbackend.service.UserService;
+import com.maciejgogulski.eventschedulingbackend.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
+    private final AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto authRequest) {
-        return ResponseEntity.ok(userService.login(authRequest));
+        return ResponseEntity.ok(authService.login(authRequest));
     }
 }

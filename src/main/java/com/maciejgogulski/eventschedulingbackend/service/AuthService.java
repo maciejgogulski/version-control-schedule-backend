@@ -5,8 +5,6 @@ import com.maciejgogulski.eventschedulingbackend.dto.AuthResponseDto;
 import org.springframework.stereotype.Service;
 
 @Service
-public interface UserService {
-
+public interface AuthService {
     AuthResponseDto login(AuthRequestDto request);
-
 }
