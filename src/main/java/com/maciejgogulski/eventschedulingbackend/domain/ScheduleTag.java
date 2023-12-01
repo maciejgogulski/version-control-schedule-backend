@@ -22,4 +22,8 @@ public class ScheduleTag {
     @OneToMany(mappedBy = "scheduleTag", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<ScheduleBlock> scheduleBlocks;
+
+    @OneToMany(mappedBy = "scheduleTag", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<StagedEvent> stagedEvents;
 }
