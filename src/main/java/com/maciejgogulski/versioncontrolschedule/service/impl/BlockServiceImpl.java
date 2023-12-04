@@ -280,12 +280,7 @@ public class BlockServiceImpl implements BlockService {
     @Override
     @Transactional
     public List<ParameterDto> getParametersForBlock(Long blockId) {
-        final String METHOD_TAG = "[getParametersForBlock]";
-        logger.debug(METHOD_TAG + " Getting parameters for block with id: " + blockId);
-
-        List<ParameterDto> parameterDtoList = blockParameterDao.get_parameters_for_schedule(blockId);
-
-        logger.debug(METHOD_TAG + " Successfully fetched: " + parameterDtoList.size() + " parameters");
+        List<ParameterDto> parameterDtoList = blockParameterDao.get_parameters_for_block(blockId);
         return parameterDtoList;
     }
 

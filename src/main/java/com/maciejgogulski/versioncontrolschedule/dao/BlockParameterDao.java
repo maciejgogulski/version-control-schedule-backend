@@ -20,10 +20,10 @@ public class BlockParameterDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<ParameterDto> get_parameters_for_schedule(@Param("p_schedule_id") Long scheduleId) {
-        String sql = "SELECT * FROM get_parameters_for_schedule(:p_schedule_id)";
+    public List<ParameterDto> get_parameters_for_block(@Param("p_block_id") Long scheduleId) {
+        String sql = "SELECT * FROM get_parameters_for_block(:p_block_id)";
 
-        MapSqlParameterSource namedParameters = new MapSqlParameterSource("p_schedule_id", scheduleId);
+        MapSqlParameterSource namedParameters = new MapSqlParameterSource("p_block_id", scheduleId);
 
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, namedParameters);
         ParameterMapper parameterMapper = new ParameterMapper();
