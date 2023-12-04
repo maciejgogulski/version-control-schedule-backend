@@ -8,7 +8,7 @@ public class ParameterMapper {
     public ParameterDto mapRow(SqlRowSet rowSet) {
         return new ParameterDto(
                 rowSet.getLong("id"),
-                rowSet.getLong("schedule_block_id"),
+                rowSet.getLong("block_id"),
                 rowSet.getString("parameter_name"),
                 rowSet.getString("value")
         );

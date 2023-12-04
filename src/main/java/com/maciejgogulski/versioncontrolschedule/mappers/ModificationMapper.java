@@ -10,7 +10,7 @@ public class ModificationMapper {
     public ModificationDto mapRow(SqlRowSet rowSet) {
         return new ModificationDto(
                 rowSet.getLong("id"),
-                rowSet.getLong("staged_event_id"),
+                rowSet.getLong("version_id"),
                 rowSet.getLong("block_parameter_id"),
                 rowSet.getString("block_name"),
                 rowSet.getString("parameter_name"),

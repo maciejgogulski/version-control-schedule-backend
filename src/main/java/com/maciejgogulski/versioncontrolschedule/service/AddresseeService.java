@@ -10,8 +10,8 @@ import java.util.List;
 @Service
 public interface AddresseeService {
     @Transactional
-    List<AddresseeDto> getAddressesByScheduleId(Long scheduleTagId);
+    List<AddresseeDto> getAddressesByScheduleId(Long scheduleId);
 
     @Transactional
-    void assignAddresseeToSchedule(Long addresseeId, Long scheduleTagId) throws AlreadyBoundException;
+    void assignAddresseeToSchedule(Long addresseeId, Long scheduleId) throws AlreadyBoundException;
 }

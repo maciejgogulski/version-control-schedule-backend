@@ -8,8 +8,8 @@ import java.util.List;
 
 public interface AddresseeRepository extends JpaRepository<Addressee, Long> {
     @Procedure
-    List<Addressee> get_addressees_for_schedule_tag(Long scheduleTagId);
+    List<Addressee> get_addressees_for_schedule(Long scheduleId);
 
     @Procedure
-    void assign_addressee_to_schedule_tag(Long addresseeId, Long scheduleTagId);
+    void assign_addressee_to_schedule(Long addresseeId, Long scheduleId);
 }

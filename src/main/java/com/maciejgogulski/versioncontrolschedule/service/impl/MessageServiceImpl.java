@@ -8,7 +8,7 @@ import com.maciejgogulski.versioncontrolschedule.domain.Version;
 import com.maciejgogulski.versioncontrolschedule.dto.ModificationDto;
 import com.maciejgogulski.versioncontrolschedule.repositories.AddresseeRepository;
 import com.maciejgogulski.versioncontrolschedule.repositories.MessageRepository;
-import com.maciejgogulski.versioncontrolschedule.repositories.StagedEventRepository;
+import com.maciejgogulski.versioncontrolschedule.repositories.VersionRepository;
 import com.maciejgogulski.versioncontrolschedule.service.MessageService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -30,7 +30,7 @@ public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
 
-    private final StagedEventRepository stagedEventRepository;
+    private final VersionRepository versionRepository;
 
     private final AddresseeRepository addresseeRepository;
 
@@ -43,9 +43,9 @@ public class MessageServiceImpl implements MessageService {
     @Value("${e-mail.template-filename}")
     private String templateFile;
 
-    public MessageServiceImpl(MessageRepository messageRepository, StagedEventRepository stagedEventRepository, AddresseeRepository addresseeRepository, ModificationDao modificationDao, JavaMailSender mailSender, TemplateEngine templateEngine) {
+    public MessageServiceImpl(MessageRepository messageRepository, VersionRepository versionRepository, AddresseeRepository addresseeRepository, ModificationDao modificationDao, JavaMailSender mailSender, TemplateEngine templateEngine) {
         this.messageRepository = messageRepository;
-        this.stagedEventRepository = stagedEventRepository;
+        this.versionRepository = versionRepository;
         this.addresseeRepository = addresseeRepository;
         this.modificationDao = modificationDao;
         this.mailSender = mailSender;
@@ -54,12 +54,12 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public void notifyAddresseesAboutModifications(Long stagedEventId) throws MessagingException {
-        Version version = stagedEventRepository.findById(stagedEventId)
+    public void notifyAddresseesAboutModifications(Long versionId) throws MessagingException {
+        Version version = versionRepository.findById(versionId)
                 .orElseThrow(EntityNotFoundException::new);
         Schedule schedule = version.getSchedule();
-        List<Addressee> addressees = addresseeRepository.get_addressees_for_schedule_tag(schedule.getId());
-        List<ModificationDto> modifications = modificationDao.get_modifications_for_staged_event(stagedEventId);
+        List<Addressee> addressees = addresseeRepository.get_addressees_for_schedule(schedule.getId());
+        List<ModificationDto> modifications = modificationDao.get_modifications_for_version(versionId);
 
         String subject = "Zmiany w planie " + schedule.getName();
 

@@ -2,7 +2,7 @@ package com.maciejgogulski.versioncontrolschedule.dto;
 
 public record ParameterDto(
         Long id,
-        Long scheduleBlockId,
+        Long blockId,
         String parameterName,
         String value
 ) {

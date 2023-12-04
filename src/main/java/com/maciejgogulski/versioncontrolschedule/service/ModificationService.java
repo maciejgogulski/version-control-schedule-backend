@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface ModificationService {
-    void assignParameterToScheduleBlockModification(BlockParameter blockParameter);
+    void assignParameterToScheduleModification(BlockParameter blockParameter);
 
     void updateParameterWithinBlockModification(BlockParameter blockParameter);
 
-    void deleteParameterFromScheduleBlockModification(BlockParameter blockParameter);
+    void deleteParameterFromBlockModification(BlockParameter blockParameter);
 }

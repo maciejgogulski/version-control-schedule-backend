@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 public interface MessageService {
-    void notifyAddresseesAboutModifications(Long stagedEventId) throws MessagingException;
+    void notifyAddresseesAboutModifications(Long versionId) throws MessagingException;
 
     String constructMessage(Schedule schedule, List<ModificationDto> modifications);
 }

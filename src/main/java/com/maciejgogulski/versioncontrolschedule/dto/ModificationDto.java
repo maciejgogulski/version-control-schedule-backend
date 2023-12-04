@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public record ModificationDto(
         Long id,
-        Long stagedEventId,
+        Long versionId,
         Long blockParameterId,
         String blockName,
         String parameterName,

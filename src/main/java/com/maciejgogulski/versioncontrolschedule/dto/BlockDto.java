@@ -1,8 +1,8 @@
 package com.maciejgogulski.versioncontrolschedule.dto;
 
-public record ScheduleBlockDto(
+public record BlockDto(
         Long id,
-        Long scheduleTagId,
+        Long scheduleId,
         String name,
         String startDate,
         String endDate

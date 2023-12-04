@@ -20,10 +20,10 @@ public class ModificationDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<ModificationDto> get_modifications_for_staged_event(@Param("p_staged_event_id") Long stagedEventId) {
-        String sql = "SELECT * FROM get_modifications_for_staged_event(:p_staged_event_id)";
+    public List<ModificationDto> get_modifications_for_version(@Param("p_version_id") Long versionId) {
+        String sql = "SELECT * FROM get_modifications_for_version(:p_version_id)";
 
-        MapSqlParameterSource namedParameters = new MapSqlParameterSource("p_staged_event_id", stagedEventId);
+        MapSqlParameterSource namedParameters = new MapSqlParameterSource("p_version_id", versionId);
 
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, namedParameters);
         ModificationMapper modificationMapper = new ModificationMapper();

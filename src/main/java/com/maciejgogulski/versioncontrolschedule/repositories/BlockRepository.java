@@ -8,6 +8,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface ScheduleBlockRepository extends JpaRepository<Block, Long> {
-    List<Block> findAllByScheduleTagIdAndStartDateBetweenOrderByStartDateAsc(Long scheduleTagId, LocalDateTime startOfDay, LocalDateTime endOfDay);
+public interface BlockRepository extends JpaRepository<Block, Long> {
+    List<Block> findAllByScheduleIdAndStartDateBetweenOrderByStartDateAsc(Long scheduleId, LocalDateTime startOfDay, LocalDateTime endOfDay);
 }

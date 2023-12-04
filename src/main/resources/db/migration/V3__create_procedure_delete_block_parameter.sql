@@ -1,4 +1,4 @@
-CREATE FUNCTION public.delete_block_parameter(p_modification_id bigint) RETURNS SETOF public.staged_event
+CREATE FUNCTION public.delete_block_parameter(p_modification_id bigint) RETURNS SETOF public.version
     LANGUAGE plpgsql
 AS
 $$

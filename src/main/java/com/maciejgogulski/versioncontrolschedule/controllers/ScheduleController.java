@@ -3,8 +3,8 @@ package com.maciejgogulski.versioncontrolschedule.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maciejgogulski.versioncontrolschedule.domain.Schedule;
-import com.maciejgogulski.versioncontrolschedule.dto.ScheduleTagDto;
-import com.maciejgogulski.versioncontrolschedule.service.ScheduleTagService;
+import com.maciejgogulski.versioncontrolschedule.dto.ScheduleDto;
+import com.maciejgogulski.versioncontrolschedule.service.ScheduleService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,29 +13,22 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/schedule-tag")
-public class ScheduleTagController {
-
+@RequestMapping("/schedule")
+public class ScheduleController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final ScheduleTagService scheduleTagService;
+    private final ScheduleService scheduleService;
 
-    public ScheduleTagController(ScheduleTagService scheduleTagService) {
-        this.scheduleTagService = scheduleTagService;
+    public ScheduleController(ScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
     }
 
-
-    /**
-     * Create a new schedule tag.
-     * @param scheduleTagDto New schedule tag data.
-     * @return Created schedule tag.
-     */
     @PostMapping
-    public ResponseEntity<String> addScheduleTag(@RequestBody ScheduleTagDto scheduleTagDto) {
-        Schedule schedule = scheduleTagService.addScheduleTag(scheduleTagDto.name());
+    public ResponseEntity<String> addSchedule(@RequestBody ScheduleDto scheduleDto) {
+        Schedule schedule = scheduleService.addSchedule(scheduleDto.name());
 
-        String responseBody = null;
+        String responseBody;
         try {
             responseBody = objectMapper.writeValueAsString(schedule);
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
@@ -45,22 +38,17 @@ public class ScheduleTagController {
         // TODO Handle unique name constraint violation exception.
     }
 
-    /**
-     * Get existing schedule tag.
-     * @param scheduleTagId Unique id of a schedule tag.
-     * @return Schedule tag.
-     */
-    @GetMapping("/{scheduleTagId}")
-    ResponseEntity<String> getScheduleTag(@PathVariable Long scheduleTagId) {
+    @GetMapping("/{scheduleId}")
+    ResponseEntity<String> getSchedule(@PathVariable Long scheduleId) {
         try {
-            Schedule schedule = scheduleTagService.getScheduleTag(scheduleTagId);
+            Schedule schedule = scheduleService.getSchedule(scheduleId);
             String responseBody = objectMapper.writeValueAsString(schedule);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("""
                     {
-                        status: "Schedule tag not found."
+                        status: "Schedule not found."
                     }
                     """, HttpStatus.NOT_FOUND);
         } catch (JsonProcessingException e) {
@@ -69,16 +57,16 @@ public class ScheduleTagController {
     }
 
     @GetMapping()
-    ResponseEntity<String> getScheduleTags() {
+    ResponseEntity<String> getSchedules() {
         try {
-            List<Schedule> schedules = scheduleTagService.getScheduleTags();
+            List<Schedule> schedules = scheduleService.getSchedules();
             String responseBody = objectMapper.writeValueAsString(schedules);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("""
                     {
-                        status: "Schedule tag not found."
+                        status: "Schedule not found."
                     }
                     """, HttpStatus.NOT_FOUND);
         } catch (JsonProcessingException e) {
@@ -86,23 +74,18 @@ public class ScheduleTagController {
         }
     }
 
-    /**
-     * Updates existing schedule tag.
-     * @param scheduleTagDto Updated schedule tag data.
-     * @return Updated schedule tag.
-     */
     @PutMapping()
-    ResponseEntity<String> updateScheduleTag(@RequestBody ScheduleTagDto scheduleTagDto) {
+    ResponseEntity<String> updateSchedule(@RequestBody ScheduleDto scheduleDto) {
         try {
-            ScheduleTagDto updatedScheduleTag = scheduleTagService.updateScheduleTag(scheduleTagDto);
+            ScheduleDto updatedSchedule = scheduleService.updateSchedule(scheduleDto);
 
-            String responseBody = objectMapper.writeValueAsString(updatedScheduleTag);
+            String responseBody = objectMapper.writeValueAsString(updatedSchedule);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("""
                     {
-                        status: "Schedule tag not found."
+                        status: "Schedule not found."
                     }
                     """, HttpStatus.NOT_FOUND);
         } catch (JsonProcessingException e) {
@@ -112,26 +95,20 @@ public class ScheduleTagController {
         // TODO Handle unique name constraint violation exception.
     }
 
-
-    /**
-     * Delete existing schedule tag.
-     * @param scheduleTagId Schedule tag id.
-     * @return Response message.
-     */
-    @DeleteMapping("/{scheduleTagId}")
-    ResponseEntity<String> deleteScheduleTag(@PathVariable Long scheduleTagId) {
+    @DeleteMapping("/{scheduleId}")
+    ResponseEntity<String> deleteSchedule(@PathVariable Long scheduleId) {
         try {
-            scheduleTagService.deleteScheduleTag(scheduleTagId);
+            scheduleService.deleteSchedule(scheduleId);
 
             return new ResponseEntity<>("""
                     {
-                        status: "Schedule tag deleted."
+                        status: "Schedule deleted."
                     }
                     """, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("""
                     {
-                        status: "Schedule tag not found."
+                        status: "Schedule not found."
                     }
                     """, HttpStatus.NOT_FOUND);
         }

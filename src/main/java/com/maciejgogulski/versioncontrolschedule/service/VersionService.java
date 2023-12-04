@@ -1,7 +1,7 @@
 package com.maciejgogulski.versioncontrolschedule.service;
 
 import com.maciejgogulski.versioncontrolschedule.dto.ModificationDto;
-import com.maciejgogulski.versioncontrolschedule.dto.StagedEventDto;
+import com.maciejgogulski.versioncontrolschedule.dto.VersionDto;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public interface StagedEventService {
-    List<ModificationDto> getModificationsForStagedEvent(Long stagedEventId);
+public interface VersionService {
+    List<ModificationDto> getModificationsForVersion(Long versionId);
 
     @Transactional
-    StagedEventDto getLatestStagedEventForSchedule(Long scheduleTagId);
+    VersionDto getLatestVersionForSchedule(Long scheduleId);
 
     @Transactional
-    void commitStagedEvent(Long stagedEventId) throws MessagingException;
+    void commitVersion(Long versionId) throws MessagingException;
 }

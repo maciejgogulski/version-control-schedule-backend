@@ -14,5 +14,5 @@ public interface BlockParameterRepository extends JpaRepository<BlockParameter, 
     void delete_block_parameter(Long blockParameterId);
 
     @Procedure
-    Optional<BlockParameter> find_deleted_block_parameter_by_block_id_parameter_dict_pair(Long scheduleBlockId, Long parameterDictId);
+    Optional<BlockParameter> find_deleted_block_parameter_by_block_id_parameter_dict_pair(Long blockId, Long parameterDictId);
 }

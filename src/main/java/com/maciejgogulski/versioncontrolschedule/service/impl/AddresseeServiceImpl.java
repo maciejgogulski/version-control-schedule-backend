@@ -56,28 +56,28 @@ public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDt
 
     @Transactional
     @Override
-    public List<AddresseeDto> getAddressesByScheduleId(Long scheduleTagId) {
-        final String METHOD_TAG = "[getAddressesByScheduleTagId] ";
-        logger.debug(METHOD_TAG + "Getting addressees for schedule tag id: " + scheduleTagId);
-        List<Addressee> addresseeList = ((AddresseeRepository) repository).get_addressees_for_schedule_tag(scheduleTagId);
+    public List<AddresseeDto> getAddressesByScheduleId(Long scheduleId) {
+        final String METHOD_TAG = "[getAddressesByScheduleId] ";
+        logger.debug(METHOD_TAG + "Getting addressees for schedule id: " + scheduleId);
+        List<Addressee> addresseeList = ((AddresseeRepository) repository).get_addressees_for_schedule(scheduleId);
         List<AddresseeDto> dtoList = new LinkedList<>();
         for (Addressee addressee : addresseeList) {
             dtoList.add(
                     convertToDto(addressee)
             );
         }
-        logger.debug(METHOD_TAG + "Fetched " + addresseeList.size() + " addressees for schedule tag id: " + scheduleTagId);
+        logger.debug(METHOD_TAG + "Fetched " + addresseeList.size() + " addressees for schedule id: " + scheduleId);
         return dtoList;
     }
 
     @Override
     @Transactional
-    public void assignAddresseeToSchedule(Long addresseeId, Long scheduleTagId) throws AlreadyBoundException {
+    public void assignAddresseeToSchedule(Long addresseeId, Long scheduleId) throws AlreadyBoundException {
         final String METHOD_TAG = "[assignAddresseeToScheduleTagId] ";
-        logger.debug(METHOD_TAG + "Assigning addressee id: " + addresseeId + " to schedule tag id: " + scheduleTagId);
+        logger.debug(METHOD_TAG + "Assigning addressee id: " + addresseeId + " to schedule id: " + scheduleId);
 
-        ((AddresseeRepository) repository).assign_addressee_to_schedule_tag(addresseeId, scheduleTagId);
+        ((AddresseeRepository) repository).assign_addressee_to_schedule(addresseeId, scheduleId);
 
-        logger.debug(METHOD_TAG + "Successfully assigned addressee id: " + addresseeId + " to schedule tag id: " + scheduleTagId);
+        logger.debug(METHOD_TAG + "Successfully assigned addressee id: " + addresseeId + " to schedule id: " + scheduleId);
     }
 }

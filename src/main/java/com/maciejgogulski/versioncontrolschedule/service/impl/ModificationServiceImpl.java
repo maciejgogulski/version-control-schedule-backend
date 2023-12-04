@@ -5,7 +5,7 @@ import com.maciejgogulski.versioncontrolschedule.domain.Modification;
 import com.maciejgogulski.versioncontrolschedule.domain.Version;
 import com.maciejgogulski.versioncontrolschedule.enums.ModificationType;
 import com.maciejgogulski.versioncontrolschedule.repositories.ModificationRepository;
-import com.maciejgogulski.versioncontrolschedule.repositories.StagedEventRepository;
+import com.maciejgogulski.versioncontrolschedule.repositories.VersionRepository;
 import com.maciejgogulski.versioncontrolschedule.service.ModificationService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -23,30 +23,29 @@ public class ModificationServiceImpl implements ModificationService {
 
     private final ModificationRepository modificationRepository;
 
-    private final StagedEventRepository stagedEventRepository;
+    private final VersionRepository versionRepository;
 
-    public ModificationServiceImpl(ModificationRepository modificationRepository, StagedEventRepository stagedEventRepository) {
+    public ModificationServiceImpl(ModificationRepository modificationRepository, VersionRepository versionRepository) {
         this.modificationRepository = modificationRepository;
-        this.stagedEventRepository = stagedEventRepository;
+        this.versionRepository = versionRepository;
     }
 
     @Override
     @Transactional
-    public void assignParameterToScheduleBlockModification(BlockParameter blockParameter) {
-        final String METHOD_NAME = "[assignParameterToScheduleBlockModification]";
+    public void assignParameterToScheduleModification(BlockParameter blockParameter) {
+        final String METHOD_NAME = "[assignParameterToScheduleModification]";
         logger.info(METHOD_NAME + " Creating proper modification for creating block parameter id: " + blockParameter.getId());
 
         Modification modification = new Modification();
         modification.setType(String.valueOf(ModificationType.CREATE_PARAMETER));
 
-
-        logger.debug(METHOD_NAME + " Searching for latest uncommitted staged event");
-        Version latestUncommittedVersion = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), false)
+        logger.debug(METHOD_NAME + " Searching for latest uncommitted version");
+        Version latestUncommittedVersion = versionRepository.find_latest_version_for_block_parameter(blockParameter.getId(), false)
                 .orElseThrow(EntityNotFoundException::new);
 
-        logger.debug(METHOD_NAME + " Searching for parameter modification for staged event");
+        logger.debug(METHOD_NAME + " Searching for parameter modification for version");
         Optional<Modification> modificationOptional =
-                modificationRepository.find_modification_for_staged_event_and_parameter_dict(
+                modificationRepository.find_modification_for_version_and_parameter_dict(
                         latestUncommittedVersion.getId(),
                         blockParameter.getBlock().getId(),
                         blockParameter.getParameterDict().getId()
@@ -89,13 +88,13 @@ public class ModificationServiceImpl implements ModificationService {
         Modification modification = new Modification();
         modification.setType(ModificationType.UPDATE_PARAMETER.name());
 
-        logger.debug(METHOD_NAME + " Searching for uncommitted staged event");
-        Version version = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), false)
+        logger.debug(METHOD_NAME + " Searching for uncommitted version");
+        Version version = versionRepository.find_latest_version_for_block_parameter(blockParameter.getId(), false)
                 .orElseThrow(EntityNotFoundException::new);
 
-        logger.debug(METHOD_NAME + " Searching parameter modification for staged event");
+        logger.debug(METHOD_NAME + " Searching parameter modification for version");
         Optional<Modification> modificationOptional =
-                modificationRepository.find_modification_for_staged_event_and_parameter_dict(
+                modificationRepository.find_modification_for_version_and_parameter_dict(
                         version.getId(),
                         blockParameter.getBlock().getId(),
                         blockParameter.getParameterDict().getId()
@@ -144,13 +143,13 @@ public class ModificationServiceImpl implements ModificationService {
 
         if (modification.getType().equals(ModificationType.UPDATE_PARAMETER.name())) {
             logger.debug(METHOD_NAME + " Setting old value of modification");
-            logger.debug(METHOD_NAME + " Searching for committed staged event");
+            logger.debug(METHOD_NAME + " Searching for committed version");
 
-            version = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), true)
+            version = versionRepository.find_latest_version_for_block_parameter(blockParameter.getId(), true)
                     .orElseThrow(EntityNotFoundException::new);
 
             logger.debug(METHOD_NAME + " Searching for previous modification");
-            Modification previousModification = modificationRepository.find_modification_for_staged_event_and_parameter_dict(
+            Modification previousModification = modificationRepository.find_modification_for_version_and_parameter_dict(
                             version.getId(),
                             blockParameter.getBlock().getId(),
                             blockParameter.getParameterDict().getId()
@@ -179,19 +178,19 @@ public class ModificationServiceImpl implements ModificationService {
 
     @Override
     @Transactional
-    public void deleteParameterFromScheduleBlockModification(BlockParameter blockParameter) {
-        final String METHOD_NAME = "[deleteParameterFromScheduleBlockModification]";
+    public void deleteParameterFromBlockModification(BlockParameter blockParameter) {
+        final String METHOD_NAME = "[deleteParameterFromBlockModification]";
 
         Modification modification = new Modification();
         modification.setType(String.valueOf(ModificationType.DELETE_PARAMETER));
 
-        logger.debug(METHOD_NAME + " Searching for staged event");
-        Version version = stagedEventRepository.find_latest_staged_event_for_block_parameter(blockParameter.getId(), false)
+        logger.debug(METHOD_NAME + " Searching for version");
+        Version version = versionRepository.find_latest_version_for_block_parameter(blockParameter.getId(), false)
                 .orElseThrow(EntityNotFoundException::new);
 
-        logger.debug(METHOD_NAME + " Searching parameter modification for staged event");
+        logger.debug(METHOD_NAME + " Searching parameter modification for version");
         Optional<Modification> modificationOptional =
-                modificationRepository.find_modification_for_staged_event_and_parameter_dict(
+                modificationRepository.find_modification_for_version_and_parameter_dict(
                         version.getId(),
                         blockParameter.getBlock().getId(),
                         blockParameter.getParameterDict().getId()

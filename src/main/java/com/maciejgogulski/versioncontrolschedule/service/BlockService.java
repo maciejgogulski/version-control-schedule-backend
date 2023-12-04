@@ -2,30 +2,30 @@ package com.maciejgogulski.versioncontrolschedule.service;
 
 import com.maciejgogulski.versioncontrolschedule.domain.Block;
 import com.maciejgogulski.versioncontrolschedule.dto.ParameterDto;
-import com.maciejgogulski.versioncontrolschedule.dto.ScheduleBlockDto;
+import com.maciejgogulski.versioncontrolschedule.dto.BlockDto;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.util.List;
 
 @Service
-public interface ScheduleBlockService {
+public interface BlockService {
 
-    ScheduleBlockDto addBlock(ScheduleBlockDto scheduleBlockDto) throws ParseException;
+    BlockDto addBlock(BlockDto blockDto) throws ParseException;
 
     void assignRequiredParameters(Block block);
 
-    ScheduleBlockDto getBlock(Long scheduleBlockId);
+    BlockDto getBlock(Long blockId);
 
-    ScheduleBlockDto updateBlock(ScheduleBlockDto scheduleBlockDto) throws ParseException;
+    BlockDto updateBlock(BlockDto blockDto) throws ParseException;
 
-    void deleteBlock(Long scheduleBlockId);
+    void deleteBlock(Long blockId);
 
-    List<ScheduleBlockDto> getBlocksForScheduleByDay(Long scheduleTagId, String day);
+    List<BlockDto> getBlocksForScheduleByDay(Long scheduleId, String day);
 
     void assignParameterToBlock(ParameterDto parameterDto);
 
-    List<ParameterDto> getParametersForBlock(Long scheduleBlockId);
+    List<ParameterDto> getParametersForBlock(Long blockId);
 
     void updateParameterWithinBlock(ParameterDto parameterDto);
 

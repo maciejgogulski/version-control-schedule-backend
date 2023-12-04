@@ -3,8 +3,8 @@ package com.maciejgogulski.versioncontrolschedule.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maciejgogulski.versioncontrolschedule.dto.ParameterDto;
-import com.maciejgogulski.versioncontrolschedule.dto.ScheduleBlockDto;
-import com.maciejgogulski.versioncontrolschedule.service.ScheduleBlockService;
+import com.maciejgogulski.versioncontrolschedule.dto.BlockDto;
+import com.maciejgogulski.versioncontrolschedule.service.BlockService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,15 +19,15 @@ public class BlockController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final ScheduleBlockService blockService;
+    private final BlockService blockService;
 
-    public BlockController(ScheduleBlockService blockService) {
+    public BlockController(BlockService blockService) {
         this.blockService = blockService;
     }
 
     @GetMapping("/by-day")
     public ResponseEntity<String> getBlocksForScheduleByDay(@RequestParam Long scheduleId, @RequestParam String day) {
-        List<ScheduleBlockDto> blockDtoList = blockService.getBlocksForScheduleByDay(scheduleId, day);
+        List<BlockDto> blockDtoList = blockService.getBlocksForScheduleByDay(scheduleId, day);
         String responseBody;
         try {
             responseBody = objectMapper.writeValueAsString(blockDtoList);
@@ -42,9 +42,9 @@ public class BlockController {
     }
 
     @PostMapping
-    public ResponseEntity<String> addBlock(@RequestBody ScheduleBlockDto blockDto) {
+    public ResponseEntity<String> addBlock(@RequestBody BlockDto blockDto) {
         try {
-            ScheduleBlockDto createdBlockDto = blockService.addBlock(blockDto);
+            BlockDto createdBlockDto = blockService.addBlock(blockDto);
             String responseBody;
 
             responseBody = objectMapper.writeValueAsString(createdBlockDto);
@@ -67,7 +67,7 @@ public class BlockController {
     @GetMapping("/{blockId}")
     ResponseEntity<String> getBlock(@PathVariable Long blockId) {
         try {
-            ScheduleBlockDto blockDto = blockService.getBlock(blockId);
+            BlockDto blockDto = blockService.getBlock(blockId);
             String responseBody = objectMapper.writeValueAsString(blockDto);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
@@ -87,9 +87,9 @@ public class BlockController {
     }
 
     @PutMapping()
-    ResponseEntity<String> updateBlock(@RequestBody ScheduleBlockDto blockDto) {
+    ResponseEntity<String> updateBlock(@RequestBody BlockDto blockDto) {
         try {
-            ScheduleBlockDto updatedBlock = blockService.updateBlock(blockDto);
+            BlockDto updatedBlock = blockService.updateBlock(blockDto);
             String responseBody = objectMapper.writeValueAsString(updatedBlock);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
@@ -140,7 +140,7 @@ public class BlockController {
                     {
                          status: "Assigned parameter name: %s to block id: %s"
                     }
-                     """.formatted(parameterDto.parameterName(), parameterDto.scheduleBlockId()), HttpStatus.OK);
+                     """.formatted(parameterDto.parameterName(), parameterDto.blockId()), HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("""
                     {
