@@ -12,7 +12,14 @@ public class ModificationMapper {
                 rowSet.getLong("id"),
                 rowSet.getLong("version_id"),
                 rowSet.getLong("block_parameter_id"),
+                rowSet.getLong("block_id"),
                 rowSet.getString("block_name"),
+                (rowSet.getTimestamp("block_start_date") != null)
+                        ? rowSet.getTimestamp("block_start_date").toLocalDateTime()
+                        : null,
+                (rowSet.getTimestamp("block_start_date") != null)
+                        ? rowSet.getTimestamp("block_start_date").toLocalDateTime()
+                        : null,
                 rowSet.getString("parameter_name"),
                 ModificationType.valueOf(rowSet.getString("type")),
                 rowSet.getString("old_value"),
