@@ -1,5 +1,7 @@
 package com.maciejgogulski.versioncontrolschedule.mappers;
 
+import com.maciejgogulski.versioncontrolschedule.domain.Modification;
+import com.maciejgogulski.versioncontrolschedule.domain.Version;
 import com.maciejgogulski.versioncontrolschedule.dto.ModificationDto;
 import com.maciejgogulski.versioncontrolschedule.enums.ModificationType;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -7,26 +9,29 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 public class ModificationMapper {
 
-    public ModificationDto mapRow(SqlRowSet rowSet) {
-        return new ModificationDto(
-                rowSet.getLong("id"),
-                rowSet.getLong("version_id"),
-                rowSet.getLong("block_parameter_id"),
-                rowSet.getLong("block_id"),
-                rowSet.getString("block_name"),
-                (rowSet.getTimestamp("block_start_date") != null)
-                        ? rowSet.getTimestamp("block_start_date").toLocalDateTime()
-                        : null,
-                (rowSet.getTimestamp("block_start_date") != null)
-                        ? rowSet.getTimestamp("block_start_date").toLocalDateTime()
-                        : null,
-                rowSet.getString("parameter_name"),
-                ModificationType.valueOf(rowSet.getString("type")),
-                rowSet.getString("old_value"),
-                rowSet.getString("new_value"),
-                (rowSet.getTimestamp("timestamp") != null)
-                        ? rowSet.getTimestamp("timestamp").toLocalDateTime()
+    public Modification mapRow(SqlRowSet rowSet) {
+        Modification modification = new Modification();
+        modification.setId(rowSet.getLong("modification_id"));
+        modification.setType(rowSet.getString("modification_type"));
+        modification.setOldValue(rowSet.getString("modification_old_value"));
+        modification.setNewValue(rowSet.getString("modification_new_value"));
+        modification.setTimestamp(
+                (rowSet.getTimestamp("modification_timestamp") != null)
+                        ? rowSet.getTimestamp("modification_timestamp").toLocalDateTime()
                         : null
         );
+
+        Version version = new Version();
+        version.setId(rowSet.getLong("version_id"));
+        version.setCommitted(rowSet.getBoolean("version_committed"));
+        version.setTimestamp(
+                (rowSet.getTimestamp("version_timestamp") != null)
+                        ? rowSet.getTimestamp("version_timestamp").toLocalDateTime()
+                        : null
+        );
+
+        modification.setVersion(version);
+
+        return modification;
     }
 }

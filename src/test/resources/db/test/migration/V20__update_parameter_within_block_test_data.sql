@@ -107,5 +107,59 @@ INSERT INTO modification
 VALUES
     (2, 4, 'CREATE_PARAMETER', NULL, 'Learn students XYZ', CURRENT_TIMESTAMP);
 
+-----------------------------------------------------------------------------------------------
+-- should update modification when there is more than one version between modifications
+-----------------------------------------------------------------------------------------------
+-- Prepare first version
+INSERT INTO schedule
+(name)
+VALUES
+('Test schedule 3');
+
+INSERT INTO block
+(name, schedule_id, start_date, end_date)
+VALUES
+('Test block 3', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO block_parameter
+(parameter_dict_id, block_id, value)
+VALUES
+(4, 3, '101');
+
+INSERT INTO version
+(schedule_id)
+VALUES
+(3);
+
+INSERT INTO modification
+(version_id, block_parameter_id, type, old_value, new_value, timestamp)
+VALUES
+    (4, 5, 'CREATE_PARAMETER', NULL, '101', CURRENT_TIMESTAMP);
+
+-- Commit first version
+UPDATE version
+SET
+    committed = true,
+    timestamp = CURRENT_TIMESTAMP
+WHERE id = 4;
+
+-- Create second version
+INSERT INTO version
+(schedule_id)
+VALUES
+    (3);
+
+-- Commit second version
+UPDATE version
+SET
+    committed = true,
+    timestamp = CURRENT_TIMESTAMP
+WHERE id = 5;
+
+-- Add last version where modification will be tested.
+INSERT INTO version
+(schedule_id)
+VALUES
+    (3);
 
 

@@ -11,6 +11,9 @@ import java.util.Optional;
 public interface VersionRepository extends JpaRepository<Version, Long> {
 
     @Procedure
+    Optional<Version> find_latest_version_for_block_parameter(Long blockParameterId);
+
+    @Procedure
     Optional<Version> find_latest_version_for_block_parameter(Long blockParameterId, boolean committed);
 
     @Procedure

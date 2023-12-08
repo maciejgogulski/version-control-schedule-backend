@@ -1,5 +1,6 @@
 package com.maciejgogulski.versioncontrolschedule.service.impl;
 
+import com.maciejgogulski.versioncontrolschedule.dao.ModificationDao;
 import com.maciejgogulski.versioncontrolschedule.domain.BlockParameter;
 import com.maciejgogulski.versioncontrolschedule.domain.Modification;
 import com.maciejgogulski.versioncontrolschedule.domain.Version;
@@ -23,10 +24,13 @@ public class ModificationServiceImpl implements ModificationService {
 
     private final ModificationRepository modificationRepository;
 
+    private final ModificationDao modificationDao;
+
     private final VersionRepository versionRepository;
 
-    public ModificationServiceImpl(ModificationRepository modificationRepository, VersionRepository versionRepository) {
+    public ModificationServiceImpl(ModificationRepository modificationRepository, ModificationDao modificationDao, VersionRepository versionRepository) {
         this.modificationRepository = modificationRepository;
+        this.modificationDao = modificationDao;
         this.versionRepository = versionRepository;
     }
 
@@ -36,43 +40,68 @@ public class ModificationServiceImpl implements ModificationService {
         final String METHOD_NAME = "[assignParameterToScheduleModification]";
         logger.info(METHOD_NAME + " Creating proper modification for creating block parameter id: " + blockParameter.getId());
 
-        Modification modification = new Modification();
-        modification.setType(String.valueOf(ModificationType.CREATE_PARAMETER));
-
-        logger.debug(METHOD_NAME + " Searching for latest uncommitted version");
-        Version latestUncommittedVersion = versionRepository.find_latest_version_for_block_parameter(blockParameter.getId(), false)
-                .orElseThrow(EntityNotFoundException::new);
-
-        logger.debug(METHOD_NAME + " Searching for parameter modification for version");
+        logger.debug(METHOD_NAME + " Searching for modification with latest version");
         Optional<Modification> modificationOptional =
-                modificationRepository.find_modification_for_version_and_parameter_dict(
-                        latestUncommittedVersion.getId(),
+                modificationDao.find_modification_for_parameter_dict_with_latest_version(
                         blockParameter.getBlock().getId(),
                         blockParameter.getParameterDict().getId()
                 );
 
+        Modification modification;
         if (modificationOptional.isPresent()) {
             modification = modificationOptional.get();
+
             ModificationType modificationType = ModificationType.valueOf(modification.getType());
             logger.debug(METHOD_NAME + " Found modification with type " + modificationType);
 
-            if (modificationType.equals(ModificationType.DELETE_PARAMETER)) {
+            if (modification.getVersion().isCommitted()) {
+                switch (modificationType) {
+                    case CREATE_PARAMETER, UPDATE_PARAMETER -> throw new IllegalStateException(
+                            "When assigning parameter, previous version's modification can only be DELETE_PARAMETER"
+                    );
+                    case DELETE_PARAMETER -> {
+                        Modification newModification = new Modification();
+                        newModification.setVersion(versionRepository.find_latest_version_for_block_parameter(
+                                        blockParameter.getId(),
+                                        false)
+                                .orElseThrow(EntityNotFoundException::new));
+                        newModification.setBlockParameter(blockParameter);
+                        newModification.setOldValue(null);
+                        newModification.setNewValue(blockParameter.getValue());
+                        newModification.setTimestamp(LocalDateTime.now());
+                        newModification.setType(ModificationType.CREATE_PARAMETER.name());
 
-                if (blockParameter.getValue().equals(modification.getOldValue())) {
-                    logger.debug(METHOD_NAME + " Old value of modification is the same as newly assigned parameter value - deleting modification");
-                    modificationRepository.deleteById(modification.getId());
-                    return;
-                } else {
-                    logger.debug(METHOD_NAME + " Old value of modification is different from assigned parameter value - setting modification type to UPDATE_PARAMETER");
-                    modification.setType(ModificationType.UPDATE_PARAMETER.name());
+                        modification = newModification;
+                    }
+                }
+            } else {
+                if (modificationType.equals(ModificationType.DELETE_PARAMETER)) {
+                    if (blockParameter.getValue().equals(modification.getOldValue())) {
+                        logger.debug(METHOD_NAME + " Old value of modification is the same as newly assigned parameter value - deleting modification");
+                        modificationRepository.deleteById(modification.getId());
+                        return;
+                    } else {
+                        logger.debug(METHOD_NAME + " Old value of modification is different from assigned parameter value - setting modification type to UPDATE_PARAMETER");
+                        modification.setType(ModificationType.UPDATE_PARAMETER.name());
+                        modification.setNewValue(blockParameter.getValue());
+                        modification.setTimestamp(LocalDateTime.now());
+                    }
                 }
             }
-        }
+        } else {
+            Modification newModification = new Modification();
+            newModification.setVersion(versionRepository.find_latest_version_for_block_parameter(
+                            blockParameter.getId(),
+                            false)
+                    .orElseThrow(EntityNotFoundException::new));
+            newModification.setBlockParameter(blockParameter);
+            newModification.setOldValue(null);
+            newModification.setNewValue(blockParameter.getValue());
+            newModification.setTimestamp(LocalDateTime.now());
+            newModification.setType(ModificationType.CREATE_PARAMETER.name());
 
-        modification.setVersion(latestUncommittedVersion);
-        modification.setBlockParameter(blockParameter);
-        modification.setNewValue(blockParameter.getValue());
-        modification.setTimestamp(LocalDateTime.now());
+            modification = newModification;
+        }
 
         modificationRepository.save(modification);
 
@@ -82,40 +111,57 @@ public class ModificationServiceImpl implements ModificationService {
     @Override
     @Transactional
     public void updateParameterWithinBlockModification(BlockParameter blockParameter) {
-        // fixme: Update modification is only being created when exists modification of parameter one version ago, if there is more - no modification created!
         final String METHOD_NAME = "[updateParameterWithinBlockModification]";
         logger.info(METHOD_NAME + " Creating proper modification for updating block parameter id: " + blockParameter.getId());
 
-        Modification modification = new Modification();
-        modification.setType(ModificationType.UPDATE_PARAMETER.name());
+        logger.debug(METHOD_NAME + " Searching for modification with latest version");
+        Modification modification =
+                modificationDao.find_modification_for_parameter_dict_with_latest_version(
+                                blockParameter.getBlock().getId(),
+                                blockParameter.getParameterDict().getId()
+                        )
+                        .orElseThrow(EntityNotFoundException::new);
 
-        logger.debug(METHOD_NAME + " Searching for uncommitted version");
-        Version version = versionRepository.find_latest_version_for_block_parameter(blockParameter.getId(), false)
-                .orElseThrow(EntityNotFoundException::new);
+        String previousValue = modification.getNewValue();
 
-        logger.debug(METHOD_NAME + " Searching parameter modification for version");
-        Optional<Modification> modificationOptional =
-                modificationRepository.find_modification_for_version_and_parameter_dict(
-                        version.getId(),
-                        blockParameter.getBlock().getId(),
-                        blockParameter.getParameterDict().getId()
-                );
+        ModificationType modificationType = ModificationType.valueOf(modification.getType());
+        logger.debug(METHOD_NAME + " Found modification with type " + modificationType);
 
-        if (modificationOptional.isPresent()) {
-            modification = modificationOptional.get();
-            ModificationType modificationType = ModificationType.valueOf(modification.getType());
-            logger.debug(METHOD_NAME + " Found modification with type " + modificationType);
-
+        if (modification.getVersion().isCommitted()) {
+            Modification newModification = new Modification();
+            switch (modificationType) {
+                case CREATE_PARAMETER, UPDATE_PARAMETER -> {
+                    if (modification.getNewValue().equals(previousValue)) {
+                        logger.debug(METHOD_NAME + " New value of modification is the same as previous parameter value - modification is not being created");
+                        return;
+                    }
+                    newModification.setBlockParameter(blockParameter);
+                    newModification.setNewValue(blockParameter.getValue());
+                    newModification.setOldValue(previousValue);
+                    newModification.setTimestamp(LocalDateTime.now());
+                    newModification.setVersion(
+                            versionRepository.find_latest_version_for_block_parameter(
+                                            blockParameter.getId(),
+                                            false)
+                                    .orElseThrow(EntityNotFoundException::new)
+                    );
+                    newModification.setType(ModificationType.UPDATE_PARAMETER.name());
+                }
+                case DELETE_PARAMETER ->
+                        throw new IllegalStateException("When updating parameter, previous version's modification can't be DELETE_PARAMETER");
+            }
+            modification = newModification;
+        } else {
             switch (modificationType) {
                 case CREATE_PARAMETER -> {
-                    if (blockParameter.getValue().equals(modification.getNewValue())) {
+                    if (blockParameter.getValue().equals(previousValue)) {
                         logger.debug(METHOD_NAME + " New value of modification is the same as updated parameter value - modification remains the same");
                         return;
                     }
                     logger.debug(METHOD_NAME + " New value of modification is different from updated parameter value - updating new value of modification");
                 }
                 case UPDATE_PARAMETER -> {
-                    if (blockParameter.getValue().equals(modification.getNewValue())) {
+                    if (blockParameter.getValue().equals(previousValue)) {
                         logger.debug(METHOD_NAME + " New value of modification is the same as updated parameter value - modification remains the same");
                         return;
                     }
@@ -136,40 +182,6 @@ public class ModificationServiceImpl implements ModificationService {
                     modification.setType(ModificationType.UPDATE_PARAMETER.name());
                 }
             }
-        }
-        modification.setVersion(version);
-        modification.setBlockParameter(blockParameter);
-        modification.setNewValue(blockParameter.getValue());
-        modification.setTimestamp(LocalDateTime.now());
-
-        if (modification.getType().equals(ModificationType.UPDATE_PARAMETER.name())) {
-            logger.debug(METHOD_NAME + " Setting old value of modification");
-            logger.debug(METHOD_NAME + " Searching for committed version");
-
-            version = versionRepository.find_latest_version_for_block_parameter(blockParameter.getId(), true)
-                    .orElseThrow(EntityNotFoundException::new);
-
-            logger.debug(METHOD_NAME + " Searching for previous modification");
-            Modification previousModification = modificationRepository.find_modification_for_version_and_parameter_dict(
-                            version.getId(),
-                            blockParameter.getBlock().getId(),
-                            blockParameter.getParameterDict().getId()
-                    )
-                    .orElseThrow(EntityNotFoundException::new);
-
-            if (!(previousModification.getType().equals(ModificationType.UPDATE_PARAMETER.name())
-                    || previousModification.getType().equals(ModificationType.CREATE_PARAMETER.name())
-            )) throw new IllegalArgumentException("Previous modification can't be DELETE_PARAMETER");
-
-            if (previousModification.getNewValue() == null)
-                throw new IllegalArgumentException("Previous update modification must have the new value");
-
-            if (modification.getNewValue().equals(previousModification.getNewValue())) {
-                logger.info(METHOD_NAME + " Previous modifications new value is the same as the new value");
-                return;
-            }
-
-            modification.setOldValue(previousModification.getNewValue());
         }
 
         modificationRepository.save(modification);

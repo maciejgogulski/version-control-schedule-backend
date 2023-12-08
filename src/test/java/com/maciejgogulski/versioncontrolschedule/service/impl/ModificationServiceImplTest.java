@@ -150,4 +150,28 @@ public class ModificationServiceImplTest {
 
         Assertions.assertFalse(modification.isPresent());
     }
+
+    @Test
+    @Transactional
+    public void shouldCreateModification_updateParameterWithinBlockModification_more_than_one_version_between_updates() {
+        // given
+        BlockParameter blockParameter = blockParameterRepository.findById(5L)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("102");
+
+        // when
+        modificationService.updateParameterWithinBlockModification(blockParameter);
+
+        // then
+        Modification modification = modificationRepository
+                .find_modification_for_version_and_parameter_dict(6L, 3L, 4L)
+                .orElseThrow(EntityNotFoundException::new);
+
+        logger.info(modification.toString());
+
+        Assertions.assertEquals(ModificationType.UPDATE_PARAMETER.name(), modification.getType());
+        Assertions.assertEquals("101", modification.getOldValue());
+        Assertions.assertEquals("102", modification.getNewValue());
+    }
 }

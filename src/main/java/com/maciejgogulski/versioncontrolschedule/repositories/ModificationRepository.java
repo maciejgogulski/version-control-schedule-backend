@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface ModificationRepository extends JpaRepository<Modification, Long> {
 
     @Procedure
-    Optional<Modification> find_modification_for_version_and_parameter_dict(Long versionId, Long blockId, Long parameterDictId);
+    Optional<Modification> find_modification_for_parameter_dict_from_latest_version(Long blockId, Long parameterDictId);
 }
