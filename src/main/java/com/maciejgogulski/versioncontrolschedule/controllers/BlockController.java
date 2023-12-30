@@ -142,6 +142,7 @@ public class BlockController {
                     }
                      """.formatted(parameterDto.parameterName(), parameterDto.blockId()), HttpStatus.OK);
         } catch (EntityNotFoundException e) {
+            e.printStackTrace();
             return new ResponseEntity<>("""
                     {
                         status: "Entity not found."
