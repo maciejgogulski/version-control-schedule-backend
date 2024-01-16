@@ -44,8 +44,11 @@ public class VersionController {
     }
 
     @GetMapping("/schedule/{scheduleId}/latest")
-    public ResponseEntity<?> getLatestVersionForSchedule(@PathVariable Long scheduleId) {
-        VersionDto versionDto = versionServiceImpl.getLatestVersionForSchedule(scheduleId);
+    public ResponseEntity<?> getLatestVersionForSchedule(
+            @PathVariable Long scheduleId
+    ) {
+        VersionDto versionDto =
+                versionServiceImpl.getLatestVersionForSchedule(scheduleId);
         return new ResponseEntity<>(versionDto, HttpStatus.OK);
     }
 
