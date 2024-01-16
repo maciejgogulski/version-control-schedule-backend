@@ -77,10 +77,7 @@ public class VersionServiceImpl extends CrudServiceImpl<Version, VersionDto> imp
 
     @Override
     public List<ModificationDto> getModificationsForVersion(Long versionId) {
-        logger.debug("[getModificationsForVersion] Getting modifications for version id: " + versionId);
-        List<ModificationDto> modificationDtoList = modificationDao.get_modifications_for_version(versionId);
-        logger.debug("[getModificationsForVersion] Successfully fetched " + modificationDtoList.size() + " modifications for version id: " + versionId);
-        return modificationDtoList;
+        return modificationDao.get_modifications_for_version(versionId);
     }
 
     @Transactional

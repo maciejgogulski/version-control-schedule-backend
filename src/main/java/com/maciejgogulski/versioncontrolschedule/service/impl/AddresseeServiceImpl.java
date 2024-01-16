@@ -57,8 +57,6 @@ public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDt
     @Transactional
     @Override
     public List<AddresseeDto> getAddressesByScheduleId(Long scheduleId) {
-        final String METHOD_TAG = "[getAddressesByScheduleId] ";
-        logger.debug(METHOD_TAG + "Getting addressees for schedule id: " + scheduleId);
         List<Addressee> addresseeList = ((AddresseeRepository) repository).get_addressees_for_schedule(scheduleId);
         List<AddresseeDto> dtoList = new LinkedList<>();
         for (Addressee addressee : addresseeList) {
@@ -66,7 +64,6 @@ public class AddresseeServiceImpl extends CrudServiceImpl<Addressee, AddresseeDt
                     convertToDto(addressee)
             );
         }
-        logger.debug(METHOD_TAG + "Fetched " + addresseeList.size() + " addressees for schedule id: " + scheduleId);
         return dtoList;
     }
 

@@ -64,6 +64,30 @@ public class BlockController {
         }
     }
 
+    @PostMapping("/multiple")
+    public ResponseEntity<String> addMultipleBlocks(@RequestBody List<BlockDto> blockDtos) {
+        try {
+            List<BlockDto> createdBlockDtos = blockService.addMultipleBlocks(blockDtos);
+            String responseBody;
+
+            responseBody = objectMapper.writeValueAsString(createdBlockDtos);
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity<>("""
+                    {
+                        "status": "Error parsing response to JSON."
+                    }
+                    """, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        }
+    }
+
+
     @GetMapping("/{blockId}")
     ResponseEntity<String> getBlock(@PathVariable Long blockId) {
         try {

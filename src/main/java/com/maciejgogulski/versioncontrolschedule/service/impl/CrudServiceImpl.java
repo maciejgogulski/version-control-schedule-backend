@@ -34,21 +34,17 @@ public abstract class CrudServiceImpl<T, S> implements CrudService<T, S> {
 
     @Override
     public S get(Long id) {
-        logger.debug("Getting entity with id: " + id);
         T entity = repository.findById(id).orElseThrow(EntityNotFoundException::new);
-        logger.debug("Successfully fetched entity with id: " + id);
         return convertToDto(entity);
     }
 
     @Override
     public List<S> getAll() {
-        logger.debug("Getting all entities");
         List<T> entities = repository.findAll();
         List<S> dtoList = new ArrayList<>();
         for (T entity : entities) {
             dtoList.add(convertToDto(entity));
         }
-        logger.debug("Fetched " + entities.size() + " entities");
         return dtoList;
     }
 

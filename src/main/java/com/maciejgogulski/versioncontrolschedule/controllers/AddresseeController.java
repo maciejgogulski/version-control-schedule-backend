@@ -46,9 +46,7 @@ public class AddresseeController {
     @GetMapping("/{id}")
     ResponseEntity<String> getAddressee(@PathVariable Long id) {
         try {
-            logger.info("[getAddressee] Getting addressee with id: " + id);
             AddresseeDto addresseeDto = addresseeService.get(id);
-            logger.info("[getAddressee] Successfully fetched addressee with id: " + id);
             String responseBody = objectMapper.writeValueAsString(addresseeDto);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
@@ -67,9 +65,7 @@ public class AddresseeController {
     @GetMapping()
     ResponseEntity<String> getAddressees() {
         try {
-            logger.info("[getAddressees] Getting all addressees");
             List<AddresseeDto> addresseeDtoList = addresseeService.getAll();
-            logger.info("[getAddressees] Successfully fetched " + addresseeDtoList.size() + " addressees");
             String responseBody = objectMapper.writeValueAsString(addresseeDtoList);
 
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
@@ -133,9 +129,7 @@ public class AddresseeController {
     ResponseEntity<String> getAddresseesByScheduleId(@PathVariable Long id) {
         final String METHOD_TAG = "[getAddresseeByScheduleId] ";
         try {
-            logger.info(METHOD_TAG + "Getting addressees for schedule id: " + id);
             List<AddresseeDto> addresseeDtoList = addresseeService.getAddressesByScheduleId(id);
-            logger.info(METHOD_TAG + "Successfully fetched " + addresseeDtoList.size() + " addressees");
             String responseBody = objectMapper.writeValueAsString(addresseeDtoList);
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (JsonProcessingException e) {

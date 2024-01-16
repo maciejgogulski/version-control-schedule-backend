@@ -54,12 +54,12 @@ public class BlockServiceImpl implements BlockService {
         this.blockParameterDao = blockParameterDao;
         this.modificationService = modificationService;
     }
-    
+
     @Override
     @Transactional
     public BlockDto addBlock(BlockDto blockDto) {
         logger.info("[addBlock] Creating block with name: " + blockDto.name());
-        
+
         Block block = parseDtoToBlock(blockDto);
         block = blockRepository.save(block);
 
@@ -98,11 +98,9 @@ public class BlockServiceImpl implements BlockService {
 
     @Override
     public BlockDto getBlock(Long blockId) {
-        logger.info("[getBlock] Getting block with id: " + blockId);
         Optional<Block> block = blockRepository.findById(blockId);
 
         if (block.isPresent()) {
-            logger.info("[getBlock] Successfully fetched block with id: " + blockId);
             return parseBlockToDto(
                     block.get()
             );
@@ -218,7 +216,7 @@ public class BlockServiceImpl implements BlockService {
         }
 
         Block block = blockRepository.findById(blockId)
-                 .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(EntityNotFoundException::new);
 
         BlockParameter blockParameter = blockParameterRepository
                 .find_deleted_block_parameter_by_block_id_parameter_dict_pair(block.getId(), parameterDict.getId())
@@ -255,8 +253,8 @@ public class BlockServiceImpl implements BlockService {
                 blockRepository.findById(parameterDto.blockId()).orElseThrow(EntityNotFoundException::new)
         );
         blockParameter.setParameterDict(
-               parameterDictRepository.findByName(parameterDto.parameterName())
-                       .orElseThrow(EntityNotFoundException::new)
+                parameterDictRepository.findByName(parameterDto.parameterName())
+                        .orElseThrow(EntityNotFoundException::new)
         );
 
         blockParameterRepository.save(blockParameter);
@@ -278,10 +276,22 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
+    public List<BlockDto> addMultipleBlocks(List<BlockDto> blockDtos) {
+        List<BlockDto> createdBlockDtos = new ArrayList<>();
+
+        for (BlockDto block : blockDtos) {
+            createdBlockDtos.add(
+                    addBlock(block)
+            );
+        }
+
+        return createdBlockDtos;
+    }
+
+    @Override
     @Transactional
     public List<ParameterDto> getParametersForBlock(Long blockId) {
-        List<ParameterDto> parameterDtoList = blockParameterDao.get_parameters_for_block(blockId);
-        return parameterDtoList;
+        return blockParameterDao.get_parameters_for_block(blockId);
     }
 
 }
