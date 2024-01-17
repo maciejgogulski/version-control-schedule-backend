@@ -1,6 +1,7 @@
 package com.maciejgogulski.versioncontrolschedule.service;
 
 import com.maciejgogulski.versioncontrolschedule.domain.Block;
+import com.maciejgogulski.versioncontrolschedule.dto.BlockWithParametersDto;
 import com.maciejgogulski.versioncontrolschedule.dto.ParameterDto;
 import com.maciejgogulski.versioncontrolschedule.dto.BlockDto;
 import org.springframework.stereotype.Service;
@@ -31,5 +32,5 @@ public interface BlockService {
 
     void deleteParameterFromBlock(Long blockParameterId);
 
-    List<BlockDto> addMultipleBlocks(List<BlockDto> blockDtos);
+    List<BlockDto> addMultipleBlocks(List<BlockWithParametersDto> blockDtos);
 }

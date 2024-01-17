@@ -2,6 +2,7 @@ package com.maciejgogulski.versioncontrolschedule.service.impl;
 
 import com.maciejgogulski.versioncontrolschedule.dao.BlockParameterDao;
 import com.maciejgogulski.versioncontrolschedule.domain.*;
+import com.maciejgogulski.versioncontrolschedule.dto.BlockWithParametersDto;
 import com.maciejgogulski.versioncontrolschedule.dto.ParameterDto;
 import com.maciejgogulski.versioncontrolschedule.dto.BlockDto;
 import com.maciejgogulski.versioncontrolschedule.repositories.BlockParameterRepository;
@@ -276,13 +277,30 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
-    public List<BlockDto> addMultipleBlocks(List<BlockDto> blockDtos) {
+    @Transactional
+    public List<BlockDto> addMultipleBlocks(List<BlockWithParametersDto> blockDtos) {
         List<BlockDto> createdBlockDtos = new ArrayList<>();
 
-        for (BlockDto block : blockDtos) {
-            createdBlockDtos.add(
-                    addBlock(block)
+        for (BlockWithParametersDto blockWithParametersDto : blockDtos) {
+            BlockDto blockDto = new BlockDto(
+                    blockWithParametersDto.id(),
+                    blockWithParametersDto.scheduleId(),
+                    blockWithParametersDto.name(),
+                    blockWithParametersDto.startDate(),
+                    blockWithParametersDto.endDate()
             );
+            blockDto = addBlock(blockDto);
+            createdBlockDtos.add(blockDto);
+
+            for (ParameterDto parameterDto : blockWithParametersDto.parameters()) {
+                ParameterDto parameterDtoWithId = new ParameterDto(
+                        parameterDto.id(),
+                        blockDto.id(),
+                        parameterDto.parameterName(),
+                        parameterDto.value()
+                ); // Not happy about it
+                assignParameterToBlock(parameterDtoWithId);
+            }
         }
 
         return createdBlockDtos;

@@ -2,6 +2,7 @@ package com.maciejgogulski.versioncontrolschedule.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.maciejgogulski.versioncontrolschedule.dto.BlockWithParametersDto;
 import com.maciejgogulski.versioncontrolschedule.dto.ParameterDto;
 import com.maciejgogulski.versioncontrolschedule.dto.BlockDto;
 import com.maciejgogulski.versioncontrolschedule.service.BlockService;
@@ -65,7 +66,7 @@ public class BlockController {
     }
 
     @PostMapping("/multiple")
-    public ResponseEntity<String> addMultipleBlocks(@RequestBody List<BlockDto> blockDtos) {
+    public ResponseEntity<String> addMultipleBlocks(@RequestBody List<BlockWithParametersDto> blockDtos) {
         try {
             List<BlockDto> createdBlockDtos = blockService.addMultipleBlocks(blockDtos);
             String responseBody;

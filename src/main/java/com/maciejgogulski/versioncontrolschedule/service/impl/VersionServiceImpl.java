@@ -83,7 +83,6 @@ public class VersionServiceImpl extends CrudServiceImpl<Version, VersionDto> imp
     @Transactional
     @Override
     public VersionDto getLatestVersionForSchedule(Long scheduleId) {
-        logger.debug("[getLatestVersionForSchedule] Getting latest version for schedule id: " + scheduleId);
         Version version = ((VersionRepository) repository)
                 .find_latest_version_for_schedule(scheduleId)
                 .orElseThrow(EntityNotFoundException::new);
