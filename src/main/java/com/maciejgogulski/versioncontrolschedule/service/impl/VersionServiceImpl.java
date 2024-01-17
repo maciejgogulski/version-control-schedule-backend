@@ -4,6 +4,7 @@ import com.maciejgogulski.versioncontrolschedule.dao.ModificationDao;
 import com.maciejgogulski.versioncontrolschedule.domain.Version;
 import com.maciejgogulski.versioncontrolschedule.dto.ModificationDto;
 import com.maciejgogulski.versioncontrolschedule.dto.VersionDto;
+import com.maciejgogulski.versioncontrolschedule.exceptions.NoAddresseesException;
 import com.maciejgogulski.versioncontrolschedule.repositories.ScheduleRepository;
 import com.maciejgogulski.versioncontrolschedule.repositories.VersionRepository;
 import com.maciejgogulski.versioncontrolschedule.service.MessageService;
@@ -97,9 +98,13 @@ public class VersionServiceImpl extends CrudServiceImpl<Version, VersionDto> imp
         ((VersionRepository) repository).commit_version(versionId);
         logger.debug("[commitVersion] Committed version with id: " + versionId);
 
-        messageService.notifyAddresseesAboutModifications(versionId);
+        try {
+            messageService.notifyAddresseesAboutModifications(versionId);
+        } catch (NoAddresseesException e) {
+            logger.warn("[commitVersion] No addressees for schedule");
+        }
 
-        logger.debug("[commitVersion] Creating new version.");
+        logger.debug("[commitVersion] Creating new version");
         Version previousVersion = repository.findById(versionId)
                 .orElseThrow(EntityNotFoundException::new);
 

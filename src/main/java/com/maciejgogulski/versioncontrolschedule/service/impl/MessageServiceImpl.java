@@ -6,6 +6,7 @@ import com.maciejgogulski.versioncontrolschedule.domain.Message;
 import com.maciejgogulski.versioncontrolschedule.domain.Schedule;
 import com.maciejgogulski.versioncontrolschedule.domain.Version;
 import com.maciejgogulski.versioncontrolschedule.dto.ModificationDto;
+import com.maciejgogulski.versioncontrolschedule.exceptions.NoAddresseesException;
 import com.maciejgogulski.versioncontrolschedule.repositories.AddresseeRepository;
 import com.maciejgogulski.versioncontrolschedule.repositories.MessageRepository;
 import com.maciejgogulski.versioncontrolschedule.repositories.VersionRepository;
@@ -54,11 +55,16 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public void notifyAddresseesAboutModifications(Long versionId) throws MessagingException {
+    public void notifyAddresseesAboutModifications(Long versionId) throws MessagingException, NoAddresseesException {
         Version version = versionRepository.findById(versionId)
                 .orElseThrow(EntityNotFoundException::new);
         Schedule schedule = version.getSchedule();
         List<Addressee> addressees = addresseeRepository.get_addressees_for_schedule(schedule.getId());
+
+        if (addressees.isEmpty()) {
+            throw new NoAddresseesException("No addresses assigned to schedule");
+        }
+
         List<ModificationDto> modifications = modificationDao.get_modifications_for_version(versionId);
 
         String subject = "Zmiany w planie " + schedule.getName();
