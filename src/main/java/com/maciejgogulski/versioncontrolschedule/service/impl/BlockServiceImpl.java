@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -127,26 +128,33 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
+    @Transactional
     public void deleteBlock(Long blockId) {
         logger.info("[deleteBlock] Deleting block with id: " + blockId);
         Optional<Block> block = blockRepository.findById(blockId);
 
-        if (block.isPresent()) {
-            logger.info("[deleteBlock] Successfully deleted block with id: " + blockId);
-            blockRepository.delete(block.get());
-        } else {
+        if (block.isEmpty()) {
             throw new EntityNotFoundException();
         }
+
+        List<ParameterDto> parametersToDelete = blockParameterDao.get_parameters_for_block(blockId);
+        for (ParameterDto parameter : parametersToDelete) {
+            deleteParameterFromBlock(parameter.id());
+        }
+
+        blockRepository.deleteById(blockId);
+        logger.info("[deleteBlock] Successfully deleted block with id: " + blockId);
     }
 
     @Override
+    @Transactional
     public List<BlockDto> getBlocksForScheduleByDay(Long scheduleId, String day) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dayAsLocalDateTime = LocalDateTime.parse(day, formatter);
         LocalDateTime startOfDay = dayAsLocalDateTime.with(LocalTime.MIN);
         LocalDateTime endOfDay = dayAsLocalDateTime.with(LocalTime.MAX);
 
-        List<Block> blockList = blockRepository.findAllByScheduleIdAndStartDateBetweenOrderByStartDateAsc(scheduleId, startOfDay, endOfDay);
+        List<Block> blockList = blockRepository.find_blocks_in_day(scheduleId, startOfDay, endOfDay);
 
         List<BlockDto> dtoList = new ArrayList<>();
 
