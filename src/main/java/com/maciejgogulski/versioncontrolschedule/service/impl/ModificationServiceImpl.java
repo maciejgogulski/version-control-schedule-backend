@@ -34,7 +34,6 @@ public class ModificationServiceImpl implements ModificationService {
     }
 
     @Override
-    @Transactional
     public void assignParameterToScheduleModification(BlockParameter blockParameter) {
         final String METHOD_NAME = "[assignParameterToScheduleModification]";
         logger.info(METHOD_NAME + " Creating proper modification for creating block parameter id: " + blockParameter.getId());
@@ -111,7 +110,6 @@ public class ModificationServiceImpl implements ModificationService {
     }
 
     @Override
-    @Transactional
     public void updateParameterWithinBlockModification(BlockParameter blockParameter) {
         final String METHOD_NAME = "[updateParameterWithinBlockModification]";
         logger.info(METHOD_NAME + " Creating proper modification for updating block parameter id: " + blockParameter.getId());
@@ -173,7 +171,6 @@ public class ModificationServiceImpl implements ModificationService {
     }
 
     @Override
-    @Transactional
     public void deleteParameterFromBlockModification(BlockParameter blockParameter) {
         final String METHOD_NAME = "[deleteParameterFromBlockModification]";
 

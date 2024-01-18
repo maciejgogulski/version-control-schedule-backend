@@ -7,6 +7,7 @@ import com.maciejgogulski.versioncontrolschedule.dto.ParameterDto;
 import com.maciejgogulski.versioncontrolschedule.dto.BlockDto;
 import com.maciejgogulski.versioncontrolschedule.service.BlockService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -153,6 +154,7 @@ public class BlockController {
     }
 
     @PutMapping("/parameter")
+    @Transactional
     ResponseEntity<String> assignParameterToBlock(@RequestBody ParameterDto parameterDto) {
         try {
             if (parameterDto.id() == null) {
@@ -191,6 +193,7 @@ public class BlockController {
     }
 
     @DeleteMapping("/parameter/{blockParameterId}")
+    @Transactional
     ResponseEntity<?> deleteParameterFromBlock(@PathVariable Long blockParameterId) {
         try {
             blockService.deleteParameterFromBlock(blockParameterId);

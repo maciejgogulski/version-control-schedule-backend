@@ -12,4 +12,7 @@ import java.util.List;
 public interface BlockRepository extends JpaRepository<Block, Long> {
     @Procedure
     List<Block> find_blocks_in_day(Long scheduleId, LocalDateTime startOfDay, LocalDateTime endOfDay);
+
+    @Procedure
+    void delete_block(Long blockId);
 }

@@ -72,7 +72,6 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
-    @Transactional
     public void assignRequiredParameters(Block block) {
         assignParameterToBlock(new ParameterDto(
                 null,
@@ -142,7 +141,7 @@ public class BlockServiceImpl implements BlockService {
             deleteParameterFromBlock(parameter.id());
         }
 
-        blockRepository.deleteById(blockId);
+        blockRepository.delete_block(blockId);
         logger.info("[deleteBlock] Successfully deleted block with id: " + blockId);
     }
 
@@ -204,7 +203,6 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
-    @Transactional
     public void assignParameterToBlock(ParameterDto parameterDto) {
         String parameterName = parameterDto.parameterName();
         String parameterValue = parameterDto.value();
@@ -249,7 +247,6 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
-    @Transactional
     public void updateParameterWithinBlock(ParameterDto parameterDto) {
         logger.info("[updateParameterWithinBlock] Updating parameter with name: " + parameterDto.parameterName()
                 + " and value: " + parameterDto.value() + " within block with id: " + parameterDto.blockId());
@@ -274,7 +271,6 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
-    @Transactional
     public void deleteParameterFromBlock(Long blockParameterId) {
         logger.info("[deleteParameterFromBlock] Deleting parameter id: " + blockParameterId);
         BlockParameter blockParameter = blockParameterRepository.findById(blockParameterId)
