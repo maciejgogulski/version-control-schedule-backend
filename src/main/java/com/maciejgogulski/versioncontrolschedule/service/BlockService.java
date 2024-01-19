@@ -1,9 +1,7 @@
 package com.maciejgogulski.versioncontrolschedule.service;
 
 import com.maciejgogulski.versioncontrolschedule.domain.Block;
-import com.maciejgogulski.versioncontrolschedule.dto.BlockWithParametersDto;
-import com.maciejgogulski.versioncontrolschedule.dto.ParameterDto;
-import com.maciejgogulski.versioncontrolschedule.dto.BlockDto;
+import com.maciejgogulski.versioncontrolschedule.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;

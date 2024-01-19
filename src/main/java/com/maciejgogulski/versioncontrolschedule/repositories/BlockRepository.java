@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BlockRepository extends JpaRepository<Block, Long> {
@@ -15,4 +16,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
 
     @Procedure
     void delete_block(Long blockId);
+
+    @Procedure
+    Optional<Block> find_block_by_id(Long blockId);
 }

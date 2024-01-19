@@ -2,9 +2,7 @@ package com.maciejgogulski.versioncontrolschedule.service.impl;
 
 import com.maciejgogulski.versioncontrolschedule.dao.BlockParameterDao;
 import com.maciejgogulski.versioncontrolschedule.domain.*;
-import com.maciejgogulski.versioncontrolschedule.dto.BlockWithParametersDto;
-import com.maciejgogulski.versioncontrolschedule.dto.ParameterDto;
-import com.maciejgogulski.versioncontrolschedule.dto.BlockDto;
+import com.maciejgogulski.versioncontrolschedule.dto.*;
 import com.maciejgogulski.versioncontrolschedule.repositories.BlockParameterRepository;
 import com.maciejgogulski.versioncontrolschedule.repositories.ParameterDictRepository;
 import com.maciejgogulski.versioncontrolschedule.repositories.BlockRepository;
@@ -16,14 +14,11 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class BlockServiceImpl implements BlockService {
@@ -315,5 +310,6 @@ public class BlockServiceImpl implements BlockService {
     public List<ParameterDto> getParametersForBlock(Long blockId) {
         return blockParameterDao.get_parameters_for_block(blockId);
     }
+
 
 }

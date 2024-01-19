@@ -1,15 +1,15 @@
 package com.maciejgogulski.versioncontrolschedule.service.impl;
 
 import com.maciejgogulski.versioncontrolschedule.dao.ModificationDao;
-import com.maciejgogulski.versioncontrolschedule.domain.Addressee;
-import com.maciejgogulski.versioncontrolschedule.domain.Message;
-import com.maciejgogulski.versioncontrolschedule.domain.Schedule;
-import com.maciejgogulski.versioncontrolschedule.domain.Version;
+import com.maciejgogulski.versioncontrolschedule.domain.*;
+import com.maciejgogulski.versioncontrolschedule.dto.BlockWithModificationsDto;
 import com.maciejgogulski.versioncontrolschedule.dto.ModificationDto;
 import com.maciejgogulski.versioncontrolschedule.exceptions.NoAddresseesException;
 import com.maciejgogulski.versioncontrolschedule.repositories.AddresseeRepository;
+import com.maciejgogulski.versioncontrolschedule.repositories.BlockRepository;
 import com.maciejgogulski.versioncontrolschedule.repositories.MessageRepository;
 import com.maciejgogulski.versioncontrolschedule.repositories.VersionRepository;
+import com.maciejgogulski.versioncontrolschedule.service.BlockService;
 import com.maciejgogulski.versioncontrolschedule.service.MessageService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -22,9 +22,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -37,6 +36,8 @@ public class MessageServiceImpl implements MessageService {
 
     private final ModificationDao modificationDao;
 
+    private final BlockRepository blockRepository;
+
     private final JavaMailSender mailSender;
 
     private final TemplateEngine templateEngine;
@@ -44,11 +45,19 @@ public class MessageServiceImpl implements MessageService {
     @Value("${e-mail.template-filename}")
     private String templateFile;
 
-    public MessageServiceImpl(MessageRepository messageRepository, VersionRepository versionRepository, AddresseeRepository addresseeRepository, ModificationDao modificationDao, JavaMailSender mailSender, TemplateEngine templateEngine) {
+    public MessageServiceImpl(MessageRepository messageRepository,
+                              VersionRepository versionRepository,
+                              AddresseeRepository addresseeRepository,
+                              ModificationDao modificationDao,
+                              BlockRepository blockRepository,
+                              JavaMailSender mailSender,
+                              TemplateEngine templateEngine
+    ) {
         this.messageRepository = messageRepository;
         this.versionRepository = versionRepository;
         this.addresseeRepository = addresseeRepository;
         this.modificationDao = modificationDao;
+        this.blockRepository = blockRepository;
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
     }
@@ -67,11 +76,13 @@ public class MessageServiceImpl implements MessageService {
 
         List<ModificationDto> modifications = modificationDao.get_modifications_for_version(versionId);
 
+        List<BlockWithModificationsDto> blocks = getBlocksWithModifications(modifications);
+
         String subject = "Zmiany w planie " + schedule.getName();
 
         Context context = new Context();
         context.setVariable("subject", subject);
-        context.setVariable("modifications", modifications);
+        context.setVariable("blocks", blocks);
         String htmlContent = templateEngine.process(templateFile, context);
 
         List<String> emails = new ArrayList<>();
@@ -119,9 +130,36 @@ public class MessageServiceImpl implements MessageService {
         return builder.toString();
     }
 
-//    private List<BlockWithModificationsDto> groupModificationsByBlocks(List<ModificationDto> modifications) {
-//        List<BlockWithModificationsDto> groupedBlocks = new ArrayList<>();
-//
-//
-//    }
+    private List<BlockWithModificationsDto> getBlocksWithModifications(List<ModificationDto> modifications) {
+        List<BlockWithModificationsDto> blocks = new ArrayList<>();
+        Map<Long, List<ModificationDto>> groupedModificationsMap = new HashMap<>();
+
+        for (ModificationDto modification : modifications) {
+            if (groupedModificationsMap.containsKey(modification.blockId())) {
+                groupedModificationsMap.get(modification.blockId()).add(modification);
+                continue;
+            }
+
+            groupedModificationsMap.put(modification.blockId(), new ArrayList<>(List.of(modification)));
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        for (Map.Entry<Long, List<ModificationDto>> entry : groupedModificationsMap.entrySet()) {
+            Block block = blockRepository.find_block_by_id(entry.getKey())
+                    .orElseThrow(EntityNotFoundException::new);
+
+            blocks.add(
+                    new BlockWithModificationsDto(
+                            block.getId(),
+                            block.getName(),
+                            formatter.format(block.getStartDate()),
+                            formatter.format(block.getEndDate()),
+                            entry.getValue()
+                    )
+            );
+        }
+
+        return blocks;
+    }
 }
