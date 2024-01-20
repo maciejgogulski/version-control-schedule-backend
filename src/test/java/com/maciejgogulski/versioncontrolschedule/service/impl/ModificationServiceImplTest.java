@@ -317,5 +317,128 @@ public class ModificationServiceImplTest {
         Assertions.assertEquals("KFC", modification.getNewValue());
     }
 
+    // -------------------------------------------------------------------------------
+    // DELETE PARAM FROM BLOCK TESTS
+    // -------------------------------------------------------------------------------
 
+    @Test
+    @Transactional
+    public void givenNoPreviousMod_whenDeleteParamFromBlock_thenThrowEntityNotFoundException() {
+        // given
+        Long blockId = 12L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("Jan Kowalski");
+
+        // then
+        Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            // when
+            modificationService.deleteParameterFromBlockModification(blockParameter);
+            entityManager.flush();
+        });
+    }
+
+    @Test
+    @Transactional
+    public void givenPreviousModDeleteParam_whenDeleteParamFromBlock_thenThrowIllegalStateException() {
+        // given
+        Long blockId = 13L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("Lenovo Thinkpad");
+
+        // then
+        IllegalStateException thrownIllegalState = Assertions.assertThrows(IllegalStateException.class, () -> {
+            // when
+            modificationService.deleteParameterFromBlockModification(blockParameter);
+            entityManager.flush();
+        });
+
+        Assertions.assertEquals(
+                "When deleting parameter, previous version's modification can't be DELETE_PARAMETER",
+                thrownIllegalState.getMessage()
+        );
+    }
+
+    @Test
+    @Transactional
+    public void givenPreviousModUpdateParamInPreviousVersion_whenDeleteParamFromBlock_thenCreateModDeleteParam() {
+        // given
+        Long versionId = 18L;
+        Long blockId = 14L;
+        Long parameterDictId = 17L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("North");
+
+        // when
+        modificationService.deleteParameterFromBlockModification(blockParameter);
+        entityManager.flush();
+
+        // then
+        Modification modification = modificationRepository
+                .find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        Assertions.assertEquals(ModificationType.DELETE_PARAMETER.name(), modification.getType());
+        Assertions.assertEquals("North", modification.getOldValue());
+        Assertions.assertNull(modification.getNewValue());
+    }
+
+    @Test
+    @Transactional
+    public void givenPreviousModeCreateParamInCurrentVersion_whenDeleteParamFromBlock_thenDeleteMod() {
+        // given
+        Long versionId = 19L;
+        Long blockId = 15L;
+        Long parameterDictId = 18L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("125");
+
+        // when
+        modificationService.deleteParameterFromBlockModification(blockParameter);
+        entityManager.flush();
+
+        // then
+        Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            modificationRepository.find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId)
+                    .orElseThrow(EntityNotFoundException::new);
+        });
+    }
+
+    @Test
+    @Transactional
+    public void givenPreviousModeUpdateParamInCurrentVersion_whenDeleteParamFromBlock_thenChangeModTypeToDeleteParam() {
+        // given
+        Long versionId = 20L;
+        Long blockId = 16L;
+        Long parameterDictId = 19L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("-1 C");
+
+        // when
+        modificationService.deleteParameterFromBlockModification(blockParameter);
+        entityManager.flush();
+
+        // then
+        Modification modification = modificationRepository
+                .find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        Assertions.assertEquals(ModificationType.DELETE_PARAMETER.name(), modification.getType());
+        Assertions.assertEquals("-1 C", modification.getOldValue());
+        Assertions.assertNull(modification.getNewValue());
+    }
 }
