@@ -1,6 +1,10 @@
--- Update parameter within schedule block
+---------------------------------------------------------------------------
+-- ASSIGN PARAMETER TO SCHEDULE TEST DATA
+---------------------------------------------------------------------------
 
--- should CREATE_PARAMETER
+--------------------------------------------------
+-- 1. givenNewBlockParameter_whenAssignParamToSchedule_thenCreateModCreateParam
+--------------------------------------------------
 INSERT INTO schedule
     (name)
 VALUES
@@ -26,15 +30,9 @@ INSERT INTO block_parameter
 VALUES
 (4, 1, '101');
 
-INSERT INTO modification
-    (version_id, block_parameter_id, type, old_value, new_value, timestamp)
-VALUES
-    (1, 1, 'CREATE_PARAMETER', NULL, '101', CURRENT_TIMESTAMP);
-
-
------------------------------------------------------------------------------------------------
--- should UPDATE_PARAMETER
------------------------------------------------------------------------------------------------
+--------------------------------------------------
+-- 2. givenPreviousModCreateParam_whenAssignParamToBlock_thenThrowIllegalStateException
+--------------------------------------------------
 INSERT INTO schedule
 (name)
 VALUES
@@ -45,121 +43,130 @@ INSERT INTO block
 VALUES
     (2, 'Test block 2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-
-INSERT INTO version
-(schedule_id, committed)
-VALUES
-    (2, true);
-
 INSERT INTO parameter_dict
 (name)
 VALUES
-    ('Mode');
-
-INSERT INTO block_parameter
-(parameter_dict_id, block_id, value)
-VALUES
-    (5, 2, 'Remote');
-
-INSERT INTO modification
-(version_id, block_parameter_id, type, old_value, new_value, timestamp)
-VALUES
-    (2, 2, 'CREATE_PARAMETER', NULL, 'Remote', CURRENT_TIMESTAMP);
+    ('Teacher');
 
 INSERT INTO version
 (schedule_id)
 VALUES
     (2);
 
------------------------------------------------------------------------------------------------
--- should delete modification
------------------------------------------------------------------------------------------------
-INSERT INTO parameter_dict
-(name)
-VALUES
-    ('Teacher');
-
 INSERT INTO block_parameter
 (parameter_dict_id, block_id, value)
 VALUES
-    (6, 2, 'Mark Robertson');
+    (5, 2, 'Mark Robertson');
 
 INSERT INTO modification
 (version_id, block_parameter_id, type, old_value, new_value, timestamp)
 VALUES
-    (3, 3, 'UPDATE_PARAMETER', 'Robert Markson', 'Mark Robertson', CURRENT_TIMESTAMP);
+(2, 2, 'CREATE_PARAMETER', null, 'Mark Robertson', CURRENT_TIMESTAMP);
 
------------------------------------------------------------------------------------------------
--- should not create modification
------------------------------------------------------------------------------------------------
-INSERT INTO parameter_dict
-(name)
-VALUES
-    ('Purpose');
-
-INSERT INTO block_parameter
-(parameter_dict_id, block_id, value)
-VALUES
-    (7, 2, 'Learn students XYZ');
-
-INSERT INTO modification
-(version_id, block_parameter_id, type, old_value, new_value, timestamp)
-VALUES
-    (2, 4, 'CREATE_PARAMETER', NULL, 'Learn students XYZ', CURRENT_TIMESTAMP);
-
------------------------------------------------------------------------------------------------
--- should update modification when there is more than one version between modifications
------------------------------------------------------------------------------------------------
--- Prepare first version
+--------------------------------------------------
+-- 3. givenPreviousModDeleteParamInPreviousVersion_whenAssignParamToBlock_thenCreateModCreateParam
+--------------------------------------------------
 INSERT INTO schedule
 (name)
 VALUES
-('Test schedule 3');
+    ('Test schedule 3');
 
 INSERT INTO block
-(name, schedule_id, start_date, end_date)
+(schedule_id, name, start_date, end_date)
 VALUES
-('Test block 3', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    (3, 'Test block 3', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO parameter_dict
+(name)
+VALUES
+    ('Form');
+
+INSERT INTO version
+(schedule_id)
+VALUES
+    (3);
 
 INSERT INTO block_parameter
 (parameter_dict_id, block_id, value)
 VALUES
-(4, 3, '101');
-
-INSERT INTO version
-(schedule_id)
-VALUES
-(3);
+    (6, 3, 'Remote');
 
 INSERT INTO modification
 (version_id, block_parameter_id, type, old_value, new_value, timestamp)
 VALUES
-    (4, 5, 'CREATE_PARAMETER', NULL, '101', CURRENT_TIMESTAMP);
+    (3, 3, 'DELETE_PARAMETER', 'Stationary', null, CURRENT_TIMESTAMP);
 
--- Commit first version
 UPDATE version
-SET
-    committed = true,
-    timestamp = CURRENT_TIMESTAMP
-WHERE id = 4;
+    SET committed = true
+WHERE version.id = 3;
 
--- Create second version
 INSERT INTO version
 (schedule_id)
 VALUES
     (3);
 
--- Commit second version
-UPDATE version
-SET
-    committed = true,
-    timestamp = CURRENT_TIMESTAMP
-WHERE id = 5;
+--------------------------------------------------
+-- 4. givenPreviousModDeleteParamInCurrentVersionSameValue_whenAssignParamToBlock_thenDeleteMod
+--------------------------------------------------
+INSERT INTO schedule
+(name)
+VALUES
+    ('Test schedule 4');
 
--- Add last version where modification will be tested.
+INSERT INTO block
+(schedule_id, name, start_date, end_date)
+VALUES
+    (4, 'Test block 4', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO parameter_dict
+(name)
+VALUES
+    ('Faculty');
+
 INSERT INTO version
 (schedule_id)
 VALUES
-    (3);
+    (4);
 
+INSERT INTO block_parameter
+(parameter_dict_id, block_id, value)
+VALUES
+    (7, 4, 'Polytechnic');
 
+INSERT INTO modification
+(version_id, block_parameter_id, type, old_value, new_value, timestamp)
+VALUES
+    (5, 4, 'DELETE_PARAMETER', 'Polytechnic', null, CURRENT_TIMESTAMP);
+
+--------------------------------------------------
+-- 5. givenPreviousModDeleteParamInCurrentVersionDifferentValue_whenAssignParamToBlock_thenCreateModUpdateParam
+--------------------------------------------------
+INSERT INTO schedule
+(name)
+VALUES
+    ('Test schedule 5');
+
+INSERT INTO block
+(schedule_id, name, start_date, end_date)
+VALUES
+    (4, 'Test block 5', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO parameter_dict
+(name)
+VALUES
+    ('Group');
+
+INSERT INTO version
+(schedule_id)
+VALUES
+    (5);
+
+INSERT INTO block_parameter
+(parameter_dict_id, block_id, value)
+VALUES
+    (8, 5, '2');
+
+INSERT INTO modification
+(version_id, block_parameter_id, type, old_value, new_value, timestamp)
+VALUES
+    (6, 5, 'DELETE_PARAMETER', '1', null, CURRENT_TIMESTAMP);

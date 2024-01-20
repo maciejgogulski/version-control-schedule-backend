@@ -34,7 +34,7 @@ public class ModificationServiceImpl implements ModificationService {
     }
 
     @Override
-    public void assignParameterToScheduleModification(BlockParameter blockParameter) {
+    public void assignParameterToBlockModification(BlockParameter blockParameter) {
         final String METHOD_NAME = "[assignParameterToScheduleModification]";
         logger.info(METHOD_NAME + " Creating proper modification for creating block parameter id: " + blockParameter.getId());
 

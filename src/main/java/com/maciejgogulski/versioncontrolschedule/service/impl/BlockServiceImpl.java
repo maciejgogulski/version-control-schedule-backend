@@ -236,7 +236,7 @@ public class BlockServiceImpl implements BlockService {
 
         blockParameterRepository.save(blockParameter);
 
-        modificationService.assignParameterToScheduleModification(blockParameter);
+        modificationService.assignParameterToBlockModification(blockParameter);
 
         logger.info("[assignParameterToBlock] Successfully assigned parameter with name: " + parameterName + " to block with id: " + blockId);
     }
