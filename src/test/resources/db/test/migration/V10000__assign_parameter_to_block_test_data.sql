@@ -1,9 +1,9 @@
 ---------------------------------------------------------------------------
--- ASSIGN PARAMETER TO SCHEDULE TEST DATA
+-- ASSIGN PARAMETER TO BLOCK TEST DATA
 ---------------------------------------------------------------------------
 
 --------------------------------------------------
--- 1. givenNewBlockParameter_whenAssignParamToSchedule_thenCreateModCreateParam
+-- 1. givenNewBlockParameter_whenAssignParamToBlock_thenCreateModCreateParam
 --------------------------------------------------
 INSERT INTO schedule
     (name)

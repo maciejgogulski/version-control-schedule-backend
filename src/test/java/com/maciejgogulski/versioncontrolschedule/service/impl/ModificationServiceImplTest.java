@@ -37,17 +37,9 @@ public class ModificationServiceImplTest {
     @Autowired
     private EntityManager entityManager;
 
-    @Transactional
-    private Optional<Modification> surroundFindingModificationWithTransaction(Long versionId, Long blockId, Long parameterDictId) {
-        return modificationRepository
-                .find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId);
-    }
-
-    @Transactional
-    private void surroundAssignParamToBlockWithTransaction(BlockParameter blockParameter) {
-        modificationService.assignParameterToBlockModification(blockParameter);
-    }
-
+    // -------------------------------------------------------------------------------
+    // ASSIGN PARAM TO BLOCK TESTS
+    // -------------------------------------------------------------------------------
     @Test
     @Transactional
     public void givenNewBlockParameter_whenAssignParamToBlock_thenCreateModCreateParam() {
@@ -63,6 +55,7 @@ public class ModificationServiceImplTest {
 
         // when
         modificationService.assignParameterToBlockModification(blockParameter);
+        entityManager.flush();
 
         // then
         Modification modification = modificationRepository
@@ -78,9 +71,7 @@ public class ModificationServiceImplTest {
     @Transactional
     public void givenPreviousModCreateParam_whenAssignParamToBlock_thenThrowIllegalStateException() {
         // given
-        Long versionId = 2L;
         Long blockId = 2L;
-        Long parameterDictId = 5L;
 
         BlockParameter blockParameter = blockParameterRepository.findById(blockId)
                 .orElseThrow(EntityNotFoundException::new);
@@ -91,6 +82,7 @@ public class ModificationServiceImplTest {
         IllegalStateException thrownIllegalState = Assertions.assertThrows(IllegalStateException.class, () -> {
             // when
             modificationService.assignParameterToBlockModification(blockParameter);
+            entityManager.flush();
         });
 
         Assertions.assertEquals(
@@ -114,6 +106,7 @@ public class ModificationServiceImplTest {
 
         // when
         modificationService.assignParameterToBlockModification(blockParameter);
+        entityManager.flush();
 
         // then
         Modification modification = modificationRepository
@@ -139,12 +132,12 @@ public class ModificationServiceImplTest {
         blockParameter.setValue("Polytechnic");
 
         // when
-        surroundAssignParamToBlockWithTransaction(blockParameter);
+        modificationService.assignParameterToBlockModification(blockParameter);
         entityManager.flush();
 
         // then
         Assertions.assertThrows(EntityNotFoundException.class, () -> {
-            surroundFindingModificationWithTransaction(versionId, blockId, parameterDictId)
+            modificationRepository.find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId)
                     .orElseThrow(EntityNotFoundException::new);
         });
     }
@@ -175,4 +168,154 @@ public class ModificationServiceImplTest {
         Assertions.assertEquals("1", modification.getOldValue());
         Assertions.assertEquals("2", modification.getNewValue());
     }
+
+    // -------------------------------------------------------------------------------
+    // UPDATE PARAM WITHIN BLOCK TESTS
+    // -------------------------------------------------------------------------------
+
+    @Test
+    @Transactional
+    public void givenNoPreviousMod_whenUpdateParamWithinBlock_thenThrowEntityNotFoundException() {
+        // given
+        Long blockId = 6L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("Nevada");
+
+        // then
+        Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            // when
+            modificationService.updateParameterWithinBlockModification(blockParameter);
+            entityManager.flush();
+        });
+    }
+
+    @Test
+    @Transactional
+    public void givenPreviousModDeleteParam_whenUpdateParamWithinBlock_thenThrowIllegalStateException() {
+        // given
+        Long blockId = 7L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("Poland");
+
+        // then
+        IllegalStateException thrownIllegalState = Assertions.assertThrows(IllegalStateException.class, () -> {
+            // when
+            modificationService.updateParameterWithinBlockModification(blockParameter);
+            entityManager.flush();
+        });
+
+        Assertions.assertEquals(
+                "When updating parameter, previous version's modification can't be DELETE_PARAMETER",
+                thrownIllegalState.getMessage()
+        );
+    }
+
+    @Test
+    @Transactional
+    public void givenPreviousModCreateParamInPreviousVersionDifferentValue_whenUpdateParamWithinBlock_thenCreateModUpdateParam() {
+        // given
+        Long versionId = 10L;
+        Long blockId = 8L;
+        Long parameterDictId = 11L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("Europe");
+
+        // when
+        modificationService.updateParameterWithinBlockModification(blockParameter);
+        entityManager.flush();
+
+        // then
+        Modification modification = modificationRepository
+                .find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        Assertions.assertEquals(ModificationType.UPDATE_PARAMETER.name(), modification.getType());
+        Assertions.assertEquals("Asia", modification.getOldValue());
+        Assertions.assertEquals("Europe", modification.getNewValue());
+    }
+
+    @Test
+    @Transactional
+    public void givenPreviousModCreateParamInPreviousVersionSameValue_whenUpdateParamWithinBlock_thenDontCreateMod() {
+        // given
+        Long versionId = 12L;
+        Long blockId = 9L;
+        Long parameterDictId = 12L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("BMW");
+
+        // when
+        modificationService.updateParameterWithinBlockModification(blockParameter);
+        entityManager.flush();
+
+        Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            modificationRepository.find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId)
+                    .orElseThrow(EntityNotFoundException::new);
+        });
+    }
+
+    @Test
+    @Transactional
+    public void givenPreviousModCreateParamInCurrentVersionSameValue_whenUpdateParamWithinBlock_thenDeleteMod() {
+        // given
+        Long versionId = 13L;
+        Long blockId = 10L;
+        Long parameterDictId = 13L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("Real Madrid");
+
+        // when
+        modificationService.updateParameterWithinBlockModification(blockParameter);
+        entityManager.flush();
+
+        // then
+        Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            modificationRepository.find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId)
+                    .orElseThrow(EntityNotFoundException::new);
+        });
+    }
+
+    @Test
+    @Transactional
+    public void givenPreviousModUpdateParamInCurrentVersionDifferentValue_whenUpdateParamWithinBlock_thenUpdateModNewValue() {
+        // given
+        Long versionId = 14L;
+        Long blockId = 11L;
+        Long parameterDictId = 14L;
+
+        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        blockParameter.setValue("KFC");
+
+        // when
+        modificationService.updateParameterWithinBlockModification(blockParameter);
+        entityManager.flush();
+
+        // then
+        Modification modification = modificationRepository
+                .find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        Assertions.assertEquals(ModificationType.UPDATE_PARAMETER.name(), modification.getType());
+        Assertions.assertEquals("McDonalds", modification.getOldValue());
+        Assertions.assertEquals("KFC", modification.getNewValue());
+    }
+
+
 }
