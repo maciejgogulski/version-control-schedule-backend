@@ -307,9 +307,25 @@ public class BlockServiceImpl implements BlockService {
 
     @Override
     @Transactional
+    public List<BlockDto> getRelatedBlocks(Long blockId) {
+        List<Block> blockList = blockRepository.find_related_blocks(blockId);
+
+        List<BlockDto> dtoList = new ArrayList<>();
+
+        for (Block block : blockList) {
+            dtoList.add(parseBlockToDto(block));
+        }
+
+        return dtoList;
+    }
+
+    @Override
+    @Transactional
     public List<ParameterDto> getParametersForBlock(Long blockId) {
         return blockParameterDao.get_parameters_for_block(blockId);
     }
+
+
 
 
 }

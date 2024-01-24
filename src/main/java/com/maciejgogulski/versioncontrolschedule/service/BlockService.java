@@ -31,4 +31,6 @@ public interface BlockService {
     void deleteParameterFromBlock(Long blockParameterId);
 
     List<BlockDto> addMultipleBlocks(List<BlockWithParametersDto> blockDtos);
+
+    List<BlockDto> getRelatedBlocks(Long blockId);
 }

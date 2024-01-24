@@ -19,4 +19,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
 
     @Procedure
     Optional<Block> find_block_by_id(Long blockId);
+
+    @Procedure
+    List<Block> find_related_blocks(Long blockId);
 }

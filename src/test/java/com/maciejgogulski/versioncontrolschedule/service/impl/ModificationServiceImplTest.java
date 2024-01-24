@@ -18,8 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Optional;
-
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfig.class)
 @SpringBootTest
@@ -48,21 +46,29 @@ public class ModificationServiceImplTest {
         Long blockId = 1L;
         Long parameterDictId = 4L;
 
-        BlockParameter blockParameter = blockParameterRepository.findById(blockId)
+        BlockParameter blockParameter = blockParameterRepository
+                .findById(blockId)
                 .orElseThrow(EntityNotFoundException::new);
 
         blockParameter.setValue("102");
 
         // when
-        modificationService.assignParameterToBlockModification(blockParameter);
+        modificationService.assignParameterToBlockModification(
+                blockParameter
+        );
         entityManager.flush();
 
         // then
         Modification modification = modificationRepository
-                .find_modification_for_version_and_parameter_dict(versionId, blockId, parameterDictId)
+                .find_modification_for_version_and_parameter_dict(
+                        versionId, blockId, parameterDictId
+                )
                 .orElseThrow(EntityNotFoundException::new);
 
-        Assertions.assertEquals(ModificationType.CREATE_PARAMETER.name(), modification.getType());
+        Assertions.assertEquals(
+                ModificationType.CREATE_PARAMETER.name(),
+                modification.getType()
+        );
         Assertions.assertNull(modification.getOldValue());
         Assertions.assertEquals("102", modification.getNewValue());
     }

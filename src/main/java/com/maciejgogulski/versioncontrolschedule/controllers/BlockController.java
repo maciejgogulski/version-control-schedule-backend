@@ -210,6 +210,22 @@ public class BlockController {
                     """, HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/{blockId}/related")
+    public ResponseEntity<String> getRelatedBlocks(@PathVariable Long blockId) {
+        List<BlockDto> blockDtoList = blockService.getRelatedBlocks(blockId);
+        String responseBody;
+        try {
+            responseBody = objectMapper.writeValueAsString(blockDtoList);
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity<>("""
+                    {
+                        "status": "Error parsing response to JSON."
+                    }
+                    """, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 
 
