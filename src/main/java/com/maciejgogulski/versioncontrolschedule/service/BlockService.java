@@ -33,4 +33,6 @@ public interface BlockService {
     List<BlockDto> addMultipleBlocks(List<BlockWithParametersDto> blockDtos);
 
     List<BlockDto> getRelatedBlocks(Long blockId);
+
+    List<BlockDto> massEditBlocks(List<BlockDto> blockDtos);
 }

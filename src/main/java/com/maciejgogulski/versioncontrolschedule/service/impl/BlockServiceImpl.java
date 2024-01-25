@@ -321,11 +321,35 @@ public class BlockServiceImpl implements BlockService {
 
     @Override
     @Transactional
+    public List<BlockDto> massEditBlocks(List<BlockDto> blockDtos) {
+        for (BlockDto blockDto : blockDtos) {
+            updateBlock(blockDto);
+
+            List<ParameterDto> parameterDtoList = blockParameterDao.get_parameters_for_block(blockDto.id());
+            for (ParameterDto parameterDto : parameterDtoList) {
+                String parameterValue;
+                switch (parameterDto.parameterName()) {
+                    case "Name" -> parameterValue = blockDto.name();
+                    case "Start date" -> parameterValue = blockDto.startDate();
+                    case "End date" -> parameterValue = blockDto.endDate();
+                    default -> {
+                        continue;
+                    }
+                }
+                updateParameterWithinBlock(new ParameterDto(
+                        parameterDto.id(),
+                        parameterDto.blockId(),
+                        parameterDto.parameterName(),
+                        parameterValue
+                ));
+            }
+        }
+        return blockDtos;
+    }
+
+    @Override
+    @Transactional
     public List<ParameterDto> getParametersForBlock(Long blockId) {
         return blockParameterDao.get_parameters_for_block(blockId);
     }
-
-
-
-
 }

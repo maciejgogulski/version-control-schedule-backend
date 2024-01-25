@@ -89,6 +89,28 @@ public class BlockController {
         }
     }
 
+    @PutMapping("/mass-edit")
+    public ResponseEntity<String> massEditBlocks(@RequestBody List<BlockDto> blockDtos) {
+        try {
+            List<BlockDto> editedBlockDtos = blockService.massEditBlocks(blockDtos);
+            String responseBody;
+
+            responseBody = objectMapper.writeValueAsString(editedBlockDtos);
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity<>("""
+                    {
+                        "status": "Error parsing response to JSON."
+                    }
+                    """, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("""
+                    {
+                        status: "Schedule not found."
+                    }
+                    """, HttpStatus.NOT_FOUND);
+        }
+    }
 
     @GetMapping("/{blockId}")
     ResponseEntity<String> getBlock(@PathVariable Long blockId) {
