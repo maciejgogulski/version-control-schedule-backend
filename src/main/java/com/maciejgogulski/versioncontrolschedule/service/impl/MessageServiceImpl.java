@@ -4,6 +4,8 @@ import com.maciejgogulski.versioncontrolschedule.dao.ModificationDao;
 import com.maciejgogulski.versioncontrolschedule.domain.*;
 import com.maciejgogulski.versioncontrolschedule.dto.BlockWithModificationsDto;
 import com.maciejgogulski.versioncontrolschedule.dto.ModificationDto;
+import com.maciejgogulski.versioncontrolschedule.enums.BlockModificationType;
+import com.maciejgogulski.versioncontrolschedule.enums.ModificationType;
 import com.maciejgogulski.versioncontrolschedule.exceptions.NoAddresseesException;
 import com.maciejgogulski.versioncontrolschedule.repositories.AddresseeRepository;
 import com.maciejgogulski.versioncontrolschedule.repositories.BlockRepository;
@@ -149,12 +151,39 @@ public class MessageServiceImpl implements MessageService {
             Block block = blockRepository.find_block_by_id(entry.getKey())
                     .orElseThrow(EntityNotFoundException::new);
 
+            BlockModificationType blockModificationType = BlockModificationType.UPDATE_BLOCK;
+
+            Iterator<ModificationDto> iterator = entry.getValue().iterator();
+            while (iterator.hasNext()) {
+                ModificationDto modificationDto = iterator.next();
+
+                if (modificationDto.type().equals(ModificationType.DELETE_PARAMETER) && (
+                        modificationDto.parameterName().equals("Name") ||
+                                modificationDto.parameterName().equals("Start date") ||
+                                modificationDto.parameterName().equals("End date")
+                )) {
+                    blockModificationType = BlockModificationType.DELETE_BLOCK;
+                    entry.getValue().clear();
+                    break;
+                }
+
+                if (modificationDto.type().equals(ModificationType.CREATE_PARAMETER) && (
+                        modificationDto.parameterName().equals("Name") ||
+                                modificationDto.parameterName().equals("Start date") ||
+                                modificationDto.parameterName().equals("End date")
+                )) {
+                    iterator.remove();
+                    blockModificationType = BlockModificationType.CREATE_BLOCK;
+                }
+            }
+
             blocks.add(
                     new BlockWithModificationsDto(
                             block.getId(),
                             block.getName(),
                             formatter.format(block.getStartDate()),
                             formatter.format(block.getEndDate()),
+                            blockModificationType,
                             entry.getValue()
                     )
             );
@@ -162,4 +191,6 @@ public class MessageServiceImpl implements MessageService {
 
         return blocks;
     }
+
+
 }

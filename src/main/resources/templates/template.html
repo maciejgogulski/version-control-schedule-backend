@@ -6,38 +6,94 @@
     <title th:text="${subject}"></title>
 </head>
 <style>
+    .color-create {
+        color: #198754;
+    }
+
+    .color-update {
+        color: #0D6EFD;
+    }
+
+    .color-delete {
+        color: #dc3545;
+    }
+
+    thead tr:first-child {
+        border-top: none;
+    }
+
+    tr {
+        border-top: solid 1px;
+    }
+
+    th {
+        color: black;
+    }
+
+    td, th {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border-top: solid 5px;
+        padding-right: 5px;
+        padding-left: 5px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 8px -8px #999 inset;
+        text-align: center;
+    }
+
+    .table-container {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .thinner-text {
+        font-weight: lighter;
+    }
+
 </style>
 <body>
 <h1 th:text="${subject}"></h1>
-<table th:each="block, index: *{blocks}">
-    <thead>
-    <tr class="text-start text-primary">
-        <th colspan="3" th:text="${block.name}">
-            <span class="fw-lighter">{modificationType}: </span>
 
-        </th>
-        <th th:text="${block.startDate()}">
-            <span class="fw-lighter">Data rozpoczęcia: </span>
-        </th>
-        <th th:text="${block.endDate()}">
-            <span class="fw-lighter">Data zakończenia: </span>
-        </th>
-    </tr>
-    <tr>
-        <th>Rodzaj zmiany</th>
-        <th>Nazwa</th>
-        <th>Nowa wartosć</th>
-        <th>Poprzednia wartość</th>
-    </tr>
-    </thead>
-    <tbody class="border-light">
-        <tr th:each="modification, modIndex: *{block.modifications()}">
-            <td>{modificationType}</td>
-            <td th:text="${modification.blockName()}"></td>
+<div class="table-container">
+    <table th:class="${block.getColorClassName()}" th:each="block, index: *{blocks}">
+        <thead>
+        <tr th:class="${block.getColorClassName()}">
+            <th colspan="2" th:utext="'<span class=&quot;thinner-text&quot;>' + ${block.getTranslatedBlockModificationType() + ':</span> ' + block.name()}">
+            </th>
+            <th th:utext="${'<span class=&quot;thinner-text&quot;>Data rozpoczęcia: </span>' + block.startDate()}">
+            </th>
+            <th th:utext="${'<span class=&quot;thinner-text&quot;>Data zakończenia: </span>' + block.endDate()}">
+            </th>
+        </tr>
+        <tr th:if="${!block.modifications().isEmpty()}">
+            <th>Rodzaj zmiany</th>
+            <th>Nazwa</th>
+            <th>Nowa wartosć</th>
+            <th>Poprzednia wartość</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${!block.modifications().isEmpty()}"
+            th:each="modification, modIndex: *{block.modifications()}"
+            th:class="${modification.getColorClassName()}"
+        >
+            <td th:text="${modification.getTranslatedModificationType()}"></td>
+            <td th:text="${modification.parameterName()}"></td>
             <td th:text="${modification.newValue()}"></td>
             <td th:text="${modification.oldValue()}"></td>
         </tr>
-    </tbody>
-</table>
+        <tr th:if="${block.modifications().isEmpty()}">
+            <td colspan="4">Brak dodatkowych zmian parametrów do wyświetlenia</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
 </body>
 </html>
