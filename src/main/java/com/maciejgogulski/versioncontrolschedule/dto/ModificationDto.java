@@ -1,6 +1,5 @@
 package com.maciejgogulski.versioncontrolschedule.dto;
 
-import com.maciejgogulski.versioncontrolschedule.enums.BlockModificationType;
 import com.maciejgogulski.versioncontrolschedule.enums.ModificationType;
 
 import java.time.LocalDateTime;
@@ -20,7 +19,7 @@ public record ModificationDto(
         LocalDateTime timestamp
 ) {
     public String getTranslatedModificationType() {
-        return switch (this.type) {
+        return switch (type) {
             case CREATE_PARAMETER -> "Utworzono parametr";
             case UPDATE_PARAMETER -> "Zmodyfikowano parametr";
             case DELETE_PARAMETER -> "Usunięto parametr";
@@ -28,10 +27,19 @@ public record ModificationDto(
     }
 
     public String getColorClassName() {
-        return switch (this.type) {
+        return switch (type) {
             case CREATE_PARAMETER -> "color-create";
             case UPDATE_PARAMETER -> "color-update";
             case DELETE_PARAMETER -> "color-delete";
+        };
+    }
+
+    public String getTranslatedParameterName() {
+        return switch (parameterName) {
+            case "Name" -> "Nazwa";
+            case "Start date" -> "Data rozpoczęcia";
+            case "End date" -> "Data zakończenia";
+            default -> parameterName;
         };
     }
 }

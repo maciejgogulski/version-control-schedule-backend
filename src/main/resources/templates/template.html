@@ -84,7 +84,7 @@
             th:class="${modification.getColorClassName()}"
         >
             <td th:text="${modification.getTranslatedModificationType()}"></td>
-            <td th:text="${modification.parameterName()}"></td>
+            <td th:text="${modification.getTranslatedParameterName()}"></td>
             <td th:text="${modification.newValue()}"></td>
             <td th:text="${modification.oldValue()}"></td>
         </tr>
