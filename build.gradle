@@ -6,7 +6,13 @@ plugins {
 
 group = 'com.maciejgogulski'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
+
+java {
+    sourceCompatibility = '17'
+}
+
+jar.enabled = false
+bootJar.enabled = true
 
 configurations {
     compileOnly {
@@ -56,4 +62,10 @@ test {
     systemProperties = [
             'spring.profiles.active': 'test'
     ]
+}
+
+task copyJarsForDockerImage(type: Copy, dependsOn: build) {
+    from bootJar
+    into project.file("${project.buildDir}/docker")
+    rename '(.*).jar', 'app.jar'
 }
